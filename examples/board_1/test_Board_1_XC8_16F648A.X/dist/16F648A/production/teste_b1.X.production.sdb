@@ -1,0 +1,88 @@
+[p LITE_MODE AUTOSTATIC PIC14 PICREGULAR PICMID ]
+[d version 1.1 ]
+[d edition pro ]
+[d chip 16F648A ]
+[d frameptr 6 ]
+"26 C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_1\teste_b1.X\atraso.c
+[v _atraso_ms atraso_ms `(v  1 e 1 0 ]
+"62 C:\Program Files (x86)\Microchip\xc8\v1.45\sources\common\float.c
+[v ___ftpack __ftpack `(f  1 e 3 0 ]
+"86 C:\Program Files (x86)\Microchip\xc8\v1.45\sources\common\ftadd.c
+[v ___ftadd __ftadd `(f  1 e 3 0 ]
+"6 C:\Program Files (x86)\Microchip\xc8\v1.45\sources\pic\eeprom.c
+[v _eecpymem eecpymem `(v  1 e 1 0 ]
+"39
+[v _memcpyee memcpyee `(v  1 e 1 0 ]
+"26 C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_1\teste_b1.X\display7s.c
+[v _display7s display7s `(uc  1 e 1 0 ]
+"37 C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_1\teste_b1.X\teste_b1.c
+[v _isr isr `II(v  1 e 1 0 ]
+"41
+[v _main main `(v  1 e 1 0 ]
+"164 C:\Program Files (x86)\Microchip\xc8\v1.45\include\pic16f648a.h
+[v _PORTA PORTA `VEuc  1 e 1 @5 ]
+"226
+[v _PORTB PORTB `VEuc  1 e 1 @6 ]
+"765
+[v _CMCON CMCON `VEuc  1 e 1 @31 ]
+"905
+[v _TRISA TRISA `VEuc  1 e 1 @133 ]
+"967
+[v _TRISB TRISB `VEuc  1 e 1 @134 ]
+"1206
+[v _EEDATA EEDATA `VEuc  1 e 1 @154 ]
+"1213
+[v _EEADR EEADR `VEuc  1 e 1 @155 ]
+[s S26 . 1 `uc 1 RD 1 0 :1:0 
+`uc 1 WR 1 0 :1:1 
+`uc 1 WREN 1 0 :1:2 
+`uc 1 WRERR 1 0 :1:3 
+]
+"1233
+[u S31 . 1 `S26 1 . 1 0 ]
+[v _EECON1bits EECON1bits `VES31  1 e 1 @156 ]
+"1258
+[v _EECON2 EECON2 `VEuc  1 e 1 @157 ]
+"1415
+[v _RA0 RA0 `VEb  1 e 0 @40 ]
+"1417
+[v _RA1 RA1 `VEb  1 e 0 @41 ]
+"1419
+[v _RA2 RA2 `VEb  1 e 0 @42 ]
+"1421
+[v _RA3 RA3 `VEb  1 e 0 @43 ]
+"1423
+[v _RA4 RA4 `VEb  1 e 0 @44 ]
+"41 C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_1\teste_b1.X\teste_b1.c
+[v _main main `(v  1 e 1 0 ]
+{
+"44
+[v main@i i `uc  1 a 1 3 ]
+"43
+[v main@tmp tmp `uc  1 a 1 2 ]
+"145
+} 0
+"26 C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_1\teste_b1.X\display7s.c
+[v _display7s display7s `(uc  1 e 1 0 ]
+{
+[v display7s@v v `uc  1 a 1 wreg ]
+[v display7s@v v `uc  1 a 1 wreg ]
+[v display7s@v v `uc  1 a 1 4 ]
+"66
+} 0
+"26 C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_1\teste_b1.X\atraso.c
+[v _atraso_ms atraso_ms `(v  1 e 1 0 ]
+{
+"28
+[v atraso_ms@i i `ui  1 a 2 7 ]
+"29
+[v atraso_ms@j j `uc  1 a 1 9 ]
+"26
+[v atraso_ms@valor valor `ui  1 p 2 4 ]
+"45
+} 0
+"37 C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_1\teste_b1.X\teste_b1.c
+[v _isr isr `II(v  1 e 1 0 ]
+{
+"39
+} 0

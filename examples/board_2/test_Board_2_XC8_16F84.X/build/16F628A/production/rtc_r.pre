@@ -1,0 +1,81 @@
+
+# 1 "rtc_r.c"
+
+# 26 "rtc.h"
+extern volatile char date[10];
+extern volatile char time[10];
+
+void rtc_w(void);
+
+void rtc_r(void);
+
+# 31 "i2c.h"
+void i2c_init(void);
+void i2c_start(void);
+void i2c_stop(void);
+void i2c_wb(unsigned char val);
+unsigned char i2c_rb(unsigned char ack);
+void i2c_acktst(unsigned char val);
+
+# 29 "rtc_r.c"
+volatile char date[10];
+volatile char time[10];
+
+
+unsigned char getd(unsigned char nn)
+{
+return ((nn & 0xF0)>>4)+0x30;
+}
+
+unsigned char getu(unsigned char nn)
+{
+return (nn & 0x0F)+0x30;
+}
+
+
+void rtc_r(void)
+{
+unsigned char tmp;
+
+i2c_start();
+i2c_wb(0xA2);
+i2c_wb(2);
+
+i2c_start();
+i2c_wb(0xA3);
+tmp= 0x7F & i2c_rb(0);
+time[5]=':';
+time[6]=getd(tmp);
+time[7]=getu(tmp);
+time[8]=0;
+
+tmp= 0x7F & i2c_rb(0);
+time[2]=':';
+time[3]=getd(tmp);
+time[4]=getu(tmp);
+
+tmp= 0x3F & i2c_rb(0);
+time[0]=getd(tmp);
+time[1]=getu(tmp);
+
+tmp= 0x3F & i2c_rb(0);
+date[0]=getd(tmp);
+date[1]=getu(tmp);
+
+i2c_rb(0);
+
+tmp= 0x1F & i2c_rb(0);
+date[2]='/';
+date[3]=getd(tmp);
+date[4]=getu(tmp);
+
+tmp= i2c_rb(1);
+date[5]='/';
+date[6]=getd(tmp);
+date[7]=getu(tmp);
+date[8]=0;
+
+i2c_stop();
+
+}
+

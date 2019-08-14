@@ -1,0 +1,171 @@
+Version 3.2 HI-TECH Software Intermediate Code
+"32 i2c.h
+[v _i2c_start `(v ~T0 @X0 0 ef ]
+"34
+[v _i2c_wb `(v ~T0 @X0 0 ef1`uc ]
+"35
+[v _i2c_rb `(uc ~T0 @X0 0 ef1`uc ]
+"33
+[v _i2c_stop `(v ~T0 @X0 0 ef ]
+[; ;rtc.h: 26: extern volatile char date[10];
+[; ;rtc.h: 27: extern volatile char time[10];
+[; ;rtc.h: 29: void rtc_w(void);
+[; ;rtc.h: 31: void rtc_r(void);
+[; ;i2c.h: 31: void i2c_init(void);
+[; ;i2c.h: 32: void i2c_start(void);
+[; ;i2c.h: 33: void i2c_stop(void);
+[; ;i2c.h: 34: void i2c_wb(unsigned char val);
+[; ;i2c.h: 35: unsigned char i2c_rb(unsigned char ack);
+[; ;i2c.h: 36: void i2c_acktst(unsigned char val);
+"29 rtc_r.c
+[v _date `Vuc ~T0 @X0 -> 10 `i e ]
+[; ;rtc_r.c: 29: volatile char date[10];
+"30
+[v _time `Vuc ~T0 @X0 -> 10 `i e ]
+[; ;rtc_r.c: 30: volatile char time[10];
+"33
+[v _getd `(uc ~T0 @X0 1 ef1`uc ]
+"34
+{
+[; ;rtc_r.c: 33: unsigned char getd(unsigned char nn)
+[; ;rtc_r.c: 34: {
+[e :U _getd ]
+"33
+[v _nn `uc ~T0 @X0 1 r1 ]
+"34
+[f ]
+[; ;rtc_r.c: 35: return ((nn & 0xF0)>>4)+0x30;
+"35
+[e ) -> + >> & -> _nn `i -> 240 `i -> 4 `i -> 48 `i `uc ]
+[e $UE 1  ]
+[; ;rtc_r.c: 36: }
+"36
+[e :UE 1 ]
+}
+"38
+[v _getu `(uc ~T0 @X0 1 ef1`uc ]
+"39
+{
+[; ;rtc_r.c: 38: unsigned char getu(unsigned char nn)
+[; ;rtc_r.c: 39: {
+[e :U _getu ]
+"38
+[v _nn `uc ~T0 @X0 1 r1 ]
+"39
+[f ]
+[; ;rtc_r.c: 40: return (nn & 0x0F)+0x30;
+"40
+[e ) -> + & -> _nn `i -> 15 `i -> 48 `i `uc ]
+[e $UE 2  ]
+[; ;rtc_r.c: 41: }
+"41
+[e :UE 2 ]
+}
+"44
+[v _rtc_r `(v ~T0 @X0 1 ef ]
+"45
+{
+[; ;rtc_r.c: 44: void rtc_r(void)
+[; ;rtc_r.c: 45: {
+[e :U _rtc_r ]
+[f ]
+"46
+[v _tmp `uc ~T0 @X0 1 a ]
+[; ;rtc_r.c: 46: unsigned char tmp;
+[; ;rtc_r.c: 48: i2c_start();
+"48
+[e ( _i2c_start ..  ]
+[; ;rtc_r.c: 49: i2c_wb(0xA2);
+"49
+[e ( _i2c_wb (1 -> -> 162 `i `uc ]
+[; ;rtc_r.c: 50: i2c_wb(2);
+"50
+[e ( _i2c_wb (1 -> -> 2 `i `uc ]
+[; ;rtc_r.c: 52: i2c_start();
+"52
+[e ( _i2c_start ..  ]
+[; ;rtc_r.c: 53: i2c_wb(0xA3);
+"53
+[e ( _i2c_wb (1 -> -> 163 `i `uc ]
+[; ;rtc_r.c: 54: tmp= 0x7F & i2c_rb(0);
+"54
+[e = _tmp -> & -> 127 `i -> ( _i2c_rb (1 -> -> 0 `i `uc `i `uc ]
+[; ;rtc_r.c: 55: time[5]=':';
+"55
+[e = *U + &U _time * -> -> -> 5 `i `ui `ux -> -> # *U &U _time `ui `ux -> -> 58 `ui `uc ]
+[; ;rtc_r.c: 56: time[6]=getd(tmp);
+"56
+[e = *U + &U _time * -> -> -> 6 `i `ui `ux -> -> # *U &U _time `ui `ux ( _getd (1 _tmp ]
+[; ;rtc_r.c: 57: time[7]=getu(tmp);
+"57
+[e = *U + &U _time * -> -> -> 7 `i `ui `ux -> -> # *U &U _time `ui `ux ( _getu (1 _tmp ]
+[; ;rtc_r.c: 58: time[8]=0;
+"58
+[e = *U + &U _time * -> -> -> 8 `i `ui `ux -> -> # *U &U _time `ui `ux -> -> 0 `i `uc ]
+[; ;rtc_r.c: 60: tmp= 0x7F & i2c_rb(0);
+"60
+[e = _tmp -> & -> 127 `i -> ( _i2c_rb (1 -> -> 0 `i `uc `i `uc ]
+[; ;rtc_r.c: 61: time[2]=':';
+"61
+[e = *U + &U _time * -> -> -> 2 `i `ui `ux -> -> # *U &U _time `ui `ux -> -> 58 `ui `uc ]
+[; ;rtc_r.c: 62: time[3]=getd(tmp);
+"62
+[e = *U + &U _time * -> -> -> 3 `i `ui `ux -> -> # *U &U _time `ui `ux ( _getd (1 _tmp ]
+[; ;rtc_r.c: 63: time[4]=getu(tmp);
+"63
+[e = *U + &U _time * -> -> -> 4 `i `ui `ux -> -> # *U &U _time `ui `ux ( _getu (1 _tmp ]
+[; ;rtc_r.c: 65: tmp= 0x3F & i2c_rb(0);
+"65
+[e = _tmp -> & -> 63 `i -> ( _i2c_rb (1 -> -> 0 `i `uc `i `uc ]
+[; ;rtc_r.c: 66: time[0]=getd(tmp);
+"66
+[e = *U + &U _time * -> -> -> 0 `i `ui `ux -> -> # *U &U _time `ui `ux ( _getd (1 _tmp ]
+[; ;rtc_r.c: 67: time[1]=getu(tmp);
+"67
+[e = *U + &U _time * -> -> -> 1 `i `ui `ux -> -> # *U &U _time `ui `ux ( _getu (1 _tmp ]
+[; ;rtc_r.c: 69: tmp= 0x3F & i2c_rb(0);
+"69
+[e = _tmp -> & -> 63 `i -> ( _i2c_rb (1 -> -> 0 `i `uc `i `uc ]
+[; ;rtc_r.c: 70: date[0]=getd(tmp);
+"70
+[e = *U + &U _date * -> -> -> 0 `i `ui `ux -> -> # *U &U _date `ui `ux ( _getd (1 _tmp ]
+[; ;rtc_r.c: 71: date[1]=getu(tmp);
+"71
+[e = *U + &U _date * -> -> -> 1 `i `ui `ux -> -> # *U &U _date `ui `ux ( _getu (1 _tmp ]
+[; ;rtc_r.c: 73: i2c_rb(0);
+"73
+[e ( _i2c_rb (1 -> -> 0 `i `uc ]
+[; ;rtc_r.c: 75: tmp= 0x1F & i2c_rb(0);
+"75
+[e = _tmp -> & -> 31 `i -> ( _i2c_rb (1 -> -> 0 `i `uc `i `uc ]
+[; ;rtc_r.c: 76: date[2]='/';
+"76
+[e = *U + &U _date * -> -> -> 2 `i `ui `ux -> -> # *U &U _date `ui `ux -> -> 47 `ui `uc ]
+[; ;rtc_r.c: 77: date[3]=getd(tmp);
+"77
+[e = *U + &U _date * -> -> -> 3 `i `ui `ux -> -> # *U &U _date `ui `ux ( _getd (1 _tmp ]
+[; ;rtc_r.c: 78: date[4]=getu(tmp);
+"78
+[e = *U + &U _date * -> -> -> 4 `i `ui `ux -> -> # *U &U _date `ui `ux ( _getu (1 _tmp ]
+[; ;rtc_r.c: 80: tmp= i2c_rb(1);
+"80
+[e = _tmp ( _i2c_rb (1 -> -> 1 `i `uc ]
+[; ;rtc_r.c: 81: date[5]='/';
+"81
+[e = *U + &U _date * -> -> -> 5 `i `ui `ux -> -> # *U &U _date `ui `ux -> -> 47 `ui `uc ]
+[; ;rtc_r.c: 82: date[6]=getd(tmp);
+"82
+[e = *U + &U _date * -> -> -> 6 `i `ui `ux -> -> # *U &U _date `ui `ux ( _getd (1 _tmp ]
+[; ;rtc_r.c: 83: date[7]=getu(tmp);
+"83
+[e = *U + &U _date * -> -> -> 7 `i `ui `ux -> -> # *U &U _date `ui `ux ( _getu (1 _tmp ]
+[; ;rtc_r.c: 84: date[8]=0;
+"84
+[e = *U + &U _date * -> -> -> 8 `i `ui `ux -> -> # *U &U _date `ui `ux -> -> 0 `i `uc ]
+[; ;rtc_r.c: 86: i2c_stop();
+"86
+[e ( _i2c_stop ..  ]
+[; ;rtc_r.c: 88: }
+"88
+[e :UE 3 ]
+}

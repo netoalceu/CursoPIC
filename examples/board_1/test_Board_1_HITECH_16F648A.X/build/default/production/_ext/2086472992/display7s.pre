@@ -1,0 +1,66 @@
+
+# 1 "C:/Users/netoa/MPLABXProjects/CursoPIC/examples/board_1/test_Board_HITECH_16F648A.X/display7s.c"
+
+# 26
+unsigned char display7s(unsigned char v)
+{
+unsigned char ret;
+
+switch(v)
+{
+case 0:
+ret= 0xEE;
+break;
+case 1:
+ret= 0x28;
+break;
+case 2:
+ret= 0xCD;
+break;
+case 3:
+ret= 0x6D;
+break;
+case 4:
+ret= 0x2B;
+break;
+case 5:
+ret= 0x67;
+break;
+case 6:
+ret= 0xE7;
+break;
+case 7:
+ret= 0x2C;
+break;
+case 8:
+ret= 0xEF;
+break;
+case 9:
+ret= 0x6F;
+break;
+case 10:
+ret= 0xAF;
+break;
+case 11:
+ret= 0xE3;
+break;
+case 12:
+ret= 0xC6;
+break;
+case 13:
+ret= 0xE9;
+break;
+case 14:
+ret= 0xC7;
+break;
+case 15:
+ret= 0x87;
+break;
+default:
+ret= 0;
+break;
+}
+
+return ret;
+}
+

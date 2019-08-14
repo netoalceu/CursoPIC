@@ -1,0 +1,3 @@
+Message[302] C:\USERS\NETOA\MPLABXPROJECTS\CURSOPIC\EXAMPLES\BOARD_1\DESBRAVANDO_ASM_16F628A_EX5.X\EX5.ASM 245 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\NETOA\MPLABXPROJECTS\CURSOPIC\EXAMPLES\BOARD_1\DESBRAVANDO_ASM_16F628A_EX5.X\EX5.ASM 248 : Register in operand not in bank 0.  Ensure that bank bits are correct.
+Message[302] C:\USERS\NETOA\MPLABXPROJECTS\CURSOPIC\EXAMPLES\BOARD_1\DESBRAVANDO_ASM_16F628A_EX5.X\EX5.ASM 250 : Register in operand not in bank 0.  Ensure that bank bits are correct.

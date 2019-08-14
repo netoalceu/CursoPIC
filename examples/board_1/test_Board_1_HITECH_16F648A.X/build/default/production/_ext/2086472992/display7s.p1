@@ -1,0 +1,204 @@
+Version 3.2 HI-TECH Software Intermediate Code
+"27 C:/Users/netoa/MPLABXProjects/CursoPIC/examples/board_1/test_Board_HITECH_16F648A.X/display7s.c
+[v _display7s `(uc  1 ef1`uc ]
+{
+[; ;display7s.c: 26: unsigned char display7s(unsigned char v)
+[; ;display7s.c: 27: {
+[e :U _display7s ]
+[v _v `uc  1 r1 ]
+[f ]
+"28
+[v _ret `uc  1 a ]
+[; ;display7s.c: 28: unsigned char ret;
+[; ;display7s.c: 30: switch(v)
+"30
+[e $U 3  ]
+[; ;display7s.c: 31: {
+"31
+{
+[; ;display7s.c: 32: case 0:
+"32
+[e :U 4 ]
+[; ;display7s.c: 33: ret= 0xEE;
+"33
+[e = _ret -> -> 238 `i `uc ]
+[; ;display7s.c: 34: break;
+"34
+[e $U 2  ]
+[; ;display7s.c: 35: case 1:
+"35
+[e :U 5 ]
+[; ;display7s.c: 36: ret= 0x28;
+"36
+[e = _ret -> -> 40 `i `uc ]
+[; ;display7s.c: 37: break;
+"37
+[e $U 2  ]
+[; ;display7s.c: 38: case 2:
+"38
+[e :U 6 ]
+[; ;display7s.c: 39: ret= 0xCD;
+"39
+[e = _ret -> -> 205 `i `uc ]
+[; ;display7s.c: 40: break;
+"40
+[e $U 2  ]
+[; ;display7s.c: 41: case 3:
+"41
+[e :U 7 ]
+[; ;display7s.c: 42: ret= 0x6D;
+"42
+[e = _ret -> -> 109 `i `uc ]
+[; ;display7s.c: 43: break;
+"43
+[e $U 2  ]
+[; ;display7s.c: 44: case 4:
+"44
+[e :U 8 ]
+[; ;display7s.c: 45: ret= 0x2B;
+"45
+[e = _ret -> -> 43 `i `uc ]
+[; ;display7s.c: 46: break;
+"46
+[e $U 2  ]
+[; ;display7s.c: 47: case 5:
+"47
+[e :U 9 ]
+[; ;display7s.c: 48: ret= 0x67;
+"48
+[e = _ret -> -> 103 `i `uc ]
+[; ;display7s.c: 49: break;
+"49
+[e $U 2  ]
+[; ;display7s.c: 50: case 6:
+"50
+[e :U 10 ]
+[; ;display7s.c: 51: ret= 0xE7;
+"51
+[e = _ret -> -> 231 `i `uc ]
+[; ;display7s.c: 52: break;
+"52
+[e $U 2  ]
+[; ;display7s.c: 53: case 7:
+"53
+[e :U 11 ]
+[; ;display7s.c: 54: ret= 0x2C;
+"54
+[e = _ret -> -> 44 `i `uc ]
+[; ;display7s.c: 55: break;
+"55
+[e $U 2  ]
+[; ;display7s.c: 56: case 8:
+"56
+[e :U 12 ]
+[; ;display7s.c: 57: ret= 0xEF;
+"57
+[e = _ret -> -> 239 `i `uc ]
+[; ;display7s.c: 58: break;
+"58
+[e $U 2  ]
+[; ;display7s.c: 59: case 9:
+"59
+[e :U 13 ]
+[; ;display7s.c: 60: ret= 0x6F;
+"60
+[e = _ret -> -> 111 `i `uc ]
+[; ;display7s.c: 61: break;
+"61
+[e $U 2  ]
+[; ;display7s.c: 62: case 10:
+"62
+[e :U 14 ]
+[; ;display7s.c: 63: ret= 0xAF;
+"63
+[e = _ret -> -> 175 `i `uc ]
+[; ;display7s.c: 64: break;
+"64
+[e $U 2  ]
+[; ;display7s.c: 65: case 11:
+"65
+[e :U 15 ]
+[; ;display7s.c: 66: ret= 0xE3;
+"66
+[e = _ret -> -> 227 `i `uc ]
+[; ;display7s.c: 67: break;
+"67
+[e $U 2  ]
+[; ;display7s.c: 68: case 12:
+"68
+[e :U 16 ]
+[; ;display7s.c: 69: ret= 0xC6;
+"69
+[e = _ret -> -> 198 `i `uc ]
+[; ;display7s.c: 70: break;
+"70
+[e $U 2  ]
+[; ;display7s.c: 71: case 13:
+"71
+[e :U 17 ]
+[; ;display7s.c: 72: ret= 0xE9;
+"72
+[e = _ret -> -> 233 `i `uc ]
+[; ;display7s.c: 73: break;
+"73
+[e $U 2  ]
+[; ;display7s.c: 74: case 14:
+"74
+[e :U 18 ]
+[; ;display7s.c: 75: ret= 0xC7;
+"75
+[e = _ret -> -> 199 `i `uc ]
+[; ;display7s.c: 76: break;
+"76
+[e $U 2  ]
+[; ;display7s.c: 77: case 15:
+"77
+[e :U 19 ]
+[; ;display7s.c: 78: ret= 0x87;
+"78
+[e = _ret -> -> 135 `i `uc ]
+[; ;display7s.c: 79: break;
+"79
+[e $U 2  ]
+[; ;display7s.c: 80: default:
+"80
+[e :U 20 ]
+[; ;display7s.c: 81: ret= 0;
+"81
+[e = _ret -> -> 0 `i `uc ]
+[; ;display7s.c: 82: break;
+"82
+[e $U 2  ]
+"83
+}
+[; ;display7s.c: 83: }
+[e $U 2  ]
+"30
+[e :U 3 ]
+[e [\ _v , $ -> -> 0 `i `uc 4
+ , $ -> -> 1 `i `uc 5
+ , $ -> -> 2 `i `uc 6
+ , $ -> -> 3 `i `uc 7
+ , $ -> -> 4 `i `uc 8
+ , $ -> -> 5 `i `uc 9
+ , $ -> -> 6 `i `uc 10
+ , $ -> -> 7 `i `uc 11
+ , $ -> -> 8 `i `uc 12
+ , $ -> -> 9 `i `uc 13
+ , $ -> -> 10 `i `uc 14
+ , $ -> -> 11 `i `uc 15
+ , $ -> -> 12 `i `uc 16
+ , $ -> -> 13 `i `uc 17
+ , $ -> -> 14 `i `uc 18
+ , $ -> -> 15 `i `uc 19
+ 20 ]
+"83
+[e :U 2 ]
+[; ;display7s.c: 85: return ret;
+"85
+[e ) _ret ]
+[e $UE 1  ]
+[; ;display7s.c: 86: }
+"86
+[e :UE 1 ]
+}

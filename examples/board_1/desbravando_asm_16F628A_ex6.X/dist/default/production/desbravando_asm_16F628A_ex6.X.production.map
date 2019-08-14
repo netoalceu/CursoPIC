@@ -1,0 +1,66 @@
+MPLINK 5.08, LINKER
+Linker Map File - Created Tue Aug 13 21:47:33 2019
+
+                                 Section Info
+                  Section       Type    Address   Location Size(Bytes)
+                ---------  ---------  ---------  ---------  ---------
+                   .org_1       code   0x000000    program   0x000002
+                   .cinit    romdata   0x000001    program   0x000004
+                   .org_2       code   0x000004    program   0x0000d8
+.config_2007_BUILD/DEFAULT/PRODUCTION/EX6.O       code   0x002007    program   0x000002
+                   .org_0       code   0x002100    program   0x000002
+
+
+
+                              Program Memory Usage 
+                               Start         End      
+                           ---------   ---------      
+                            0x000000    0x000002      
+                            0x000004    0x00006f      
+                            0x002007    0x002007      
+                            0x002100    0x002100      
+            113 out of 2182 program addresses used, program memory utilization is 5%
+
+
+
+                              Symbols - Sorted by Name
+                     Name    Address   Location    Storage File                     
+                ---------  ---------  ---------  --------- ---------                
+                 ATUALIZA   0x00006d    program     static C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_1\desbravando_asm_16F628A_ex6.X\ex6.asm
+                  BT1_LIB   0x000054    program     static C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_1\desbravando_asm_16F628A_ex6.X\ex6.asm
+                  BT2_LIB   0x00005c    program     static C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_1\desbravando_asm_16F628A_ex6.X\ex6.asm
+                CHECA_BT1   0x00004d    program     static C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_1\desbravando_asm_16F628A_ex6.X\ex6.asm
+                CHECA_BT2   0x000055    program     static C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_1\desbravando_asm_16F628A_ex6.X\ex6.asm
+                 CONVERTE   0x000005    program     static C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_1\desbravando_asm_16F628A_ex6.X\ex6.asm
+                      DEC   0x00005e    program     static C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_1\desbravando_asm_16F628A_ex6.X\ex6.asm
+               ESCR_CONTA   0x000032    program     static C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_1\desbravando_asm_16F628A_ex6.X\ex6.asm
+              ESCR_E2PROM   0x00001d    program     static C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_1\desbravando_asm_16F628A_ex6.X\ex6.asm
+                      INC   0x000066    program     static C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_1\desbravando_asm_16F628A_ex6.X\ex6.asm
+                   INICIO   0x000039    program     static C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_1\desbravando_asm_16F628A_ex6.X\ex6.asm
+                 LE_CONTA   0x00002c    program     static C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_1\desbravando_asm_16F628A_ex6.X\ex6.asm
+                LE_E2PROM   0x000018    program     static C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_1\desbravando_asm_16F628A_ex6.X\ex6.asm
+                     MAIN   0x00004a    program     static C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_1\desbravando_asm_16F628A_ex6.X\ex6.asm
+             _.org_2_0028   0x000028    program     static C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_1\desbravando_asm_16F628A_ex6.X\ex6.asm
+
+
+
+                              Symbols - Sorted by Address
+                     Name    Address   Location    Storage File                     
+                ---------  ---------  ---------  --------- ---------                
+                 CONVERTE   0x000005    program     static C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_1\desbravando_asm_16F628A_ex6.X\ex6.asm
+                LE_E2PROM   0x000018    program     static C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_1\desbravando_asm_16F628A_ex6.X\ex6.asm
+              ESCR_E2PROM   0x00001d    program     static C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_1\desbravando_asm_16F628A_ex6.X\ex6.asm
+             _.org_2_0028   0x000028    program     static C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_1\desbravando_asm_16F628A_ex6.X\ex6.asm
+                 LE_CONTA   0x00002c    program     static C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_1\desbravando_asm_16F628A_ex6.X\ex6.asm
+               ESCR_CONTA   0x000032    program     static C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_1\desbravando_asm_16F628A_ex6.X\ex6.asm
+                   INICIO   0x000039    program     static C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_1\desbravando_asm_16F628A_ex6.X\ex6.asm
+                     MAIN   0x00004a    program     static C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_1\desbravando_asm_16F628A_ex6.X\ex6.asm
+                CHECA_BT1   0x00004d    program     static C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_1\desbravando_asm_16F628A_ex6.X\ex6.asm
+                  BT1_LIB   0x000054    program     static C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_1\desbravando_asm_16F628A_ex6.X\ex6.asm
+                CHECA_BT2   0x000055    program     static C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_1\desbravando_asm_16F628A_ex6.X\ex6.asm
+                  BT2_LIB   0x00005c    program     static C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_1\desbravando_asm_16F628A_ex6.X\ex6.asm
+                      DEC   0x00005e    program     static C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_1\desbravando_asm_16F628A_ex6.X\ex6.asm
+                      INC   0x000066    program     static C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_1\desbravando_asm_16F628A_ex6.X\ex6.asm
+                 ATUALIZA   0x00006d    program     static C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_1\desbravando_asm_16F628A_ex6.X\ex6.asm
+
+

@@ -1,0 +1,690 @@
+MPASM 5.77                           EX6.ASM   8-13-2019  21:47:45         PAGE  1
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00001 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00002 ;*                     CONTADOR FINAL - EX6                        *
+                      00003 ;*                       DESBRAVANDO O PIC                         *
+                      00004 ;*       DESENVOLVIDO PELA MOSAICO ENGENHARIA E CONSULTORIA        *
+                      00005 ;*      VERSÃO: 1.0                             DATA: 30/10/01     *
+                      00006 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00007 ;*                      DESCRIÇÃO DO ARQUIVO                       *
+                      00008 ;*-----------------------------------------------------------------*
+                      00009 ;*  CONTADOR QUE UTILIZA DOIS BOTÕES PARA INCREMENTAR E DECRE-     *
+                      00010 ;*  MENTAR O VALOR CONTROLADO PELA VARIÁVEL "CONTADOR". ESTA       *
+                      00011 ;*  VARIÁVEL ESTÁ LIMITADA PELAS CONSTANTES "MIN" E "MAX".         *
+                      00012 ;*  O VALOR DO CONTADOR É MOSTRADO NO DISPLAY E ARMAZENADO NA      *
+                      00013 ;*  EEPROM PARA NÃO SER PERDIDO MESMO NO CASO DE RESET.            *
+                      00014 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00015 
+                      00016 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00017 ;*                     ARQUIVOS DE DEFINIÇÕES                      *
+                      00018 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00019 
+                      00020 #INCLUDE <P16F628A.INC>         ;ARQUIVO PADRÃO MICROCHIP PARA 16F628A
+                      00001         LIST
+                      00002 
+                      00003 ;==========================================================================
+                      00004 ; Build date : Nov 22 2017
+                      00005 ;  MPASM PIC16F628A processor include
+                      00006 ; 
+                      00007 ;  (c) Copyright 1999-2017 Microchip Technology, All rights reserved
+                      00008 ;==========================================================================
+                      00009 
+                      00386         LIST
+2007   3F61           00021         __CONFIG  _BODEN_ON & _CP_OFF & _PWRTE_ON & _WDT_OFF & _LVP_OFF & _MCLRE_ON & _XT_OSC
+                      00022 
+                      00023 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00024 ;*                    PAGINAÇÃO DE MEMÓRIA                         *
+                      00025 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00026 ;DEFINIÇÃO DE COMANDOS DE USUÁRIO PARA ALTERAÇÃO DA PÁGINA DE MEMÓRIA
+                      00027 
+                      00028 #DEFINE BANK0   BCF STATUS,RP0  ;SETA BANK 0 DE MEMÓRIA
+                      00029 #DEFINE BANK1   BSF STATUS,RP0  ;SETA BANK 1 DE MAMÓRIA
+                      00030 
+                      00031 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00032 ;*                         VARIÁVEIS                               *
+                      00033 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00034 ; DEFINIÇÃO DOS NOMES E ENDEREÇOS DE TODAS AS VARIÁVEIS UTILIZADAS 
+                      00035 ; PELO SISTEMA
+                      00036 
+                      00037         CBLOCK  0x20            ;ENDEREÇO INICIAL DA MEMÓRIA DE
+                      00038                                 ;USUÁRIO
+                      00039 
+  00000020            00040                 W_TEMP          ;REGISTRADORES TEMPORÁRIOS PARA
+  00000021            00041                 STATUS_TEMP     ;INTERRUPÇÕES
+                      00042                                 ;ESTAS VARIÁVEIS NEM SERÃO UTI-
+                      00043                                 ;LIZADAS
+MPASM 5.77                           EX6.ASM   8-13-2019  21:47:45         PAGE  2
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+  00000022            00044                 CONTADOR        ;ARMAZENA O VALOR DA CONTAGEM
+  00000023            00045                 FLAGS           ;ARMAZENA OS FLAGS DE CONTROLE
+  00000024            00046                 FILTRO1         ;FILTRAGEM PARA O BOTÃO 1
+  00000025            00047                 FILTRO2         ;FILTRAGEM PARA O BOTÃO 2
+                      00048 
+                      00049         ENDC                    ;FIM DO BLOCO DE MEMÓRIA                
+                      00050 
+                      00051 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00052 ;*                        FLAGS INTERNOS                           *
+                      00053 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00054 ; DEFINIÇÃO DE TODOS OS FLAGS UTILIZADOS PELO SISTEMA
+                      00055 
+                      00056 #DEFINE ST_BT1  FLAGS,0         ;STATUS DO BOTÃO 1
+                      00057 #DEFINE ST_BT2  FLAGS,1         ;STATUS DO BOTÃO 2
+                      00058 
+                      00059 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00060 ;*                         CONSTANTES                              *
+                      00061 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00062 ; DEFINIÇÃO DE TODAS AS CONSTANTES UTILIZADAS PELO SISTEMA
+                      00063 
+  00000000            00064 MIN             EQU     .0      ;VALOR MINIMO PARA O CONTADOR
+  0000000F            00065 MAX             EQU     .15     ;VALOR MÁXIMO PARA O CONTADOR
+  000000FF            00066 T_FILTRO        EQU     .255    ;FILTRO PARA BOTÃO
+  00000000            00067 POS_MEM         EQU     .0      ;ENDEREÇO DA EEPROM ONDE SERÁ
+                      00068                                 ;ARMAZENADO O VALOR DO CONTADOR
+                      00069         
+                      00070 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00071 ;*                           ENTRADAS                              *
+                      00072 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00073 ; DEFINIÇÃO DE TODOS OS PINOS QUE SERÃO UTILIZADOS COMO ENTRADA
+                      00074 ; RECOMENDAMOS TAMBÉM COMENTAR O SIGNIFICADO DE SEUS ESTADOS (0 E 1)
+                      00075 
+                      00076 #DEFINE BOTAO1  PORTA,1 ;PORTA DO BOTÃO
+                      00077                         ; 0 -> PRESSIONADO
+                      00078                         ; 1 -> LIBERADO
+                      00079 
+                      00080 #DEFINE BOTAO2  PORTA,2 ;PORTA DO BOTÃO
+                      00081                         ; 0 -> PRESSIONADO
+                      00082                         ; 1 -> LIBERADO
+                      00083 
+                      00084 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00085 ;*                           SAÍDAS                                *
+                      00086 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00087 ; DEFINIÇÃO DE TODOS OS PINOS QUE SERÃO UTILIZADOS COMO SAÍDA
+                      00088 ; RECOMENDAMOS TAMBÉM COMENTAR O SIGNIFICADO DE SEUS ESTADOS (0 E 1)
+                      00089 
+                      00090 
+                      00091 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00092 ;*                    INICIALIZAÇÃO DA EEPROM                      *
+                      00093 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00094 
+                      00095         ORG     H'2100'+POS_MEM ;INÍCIO DA EEPROM
+2100   0005           00096         DE      .5              ;VALOR INICIAL PARA CONTADOR = 5
+MPASM 5.77                           EX6.ASM   8-13-2019  21:47:45         PAGE  3
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00097                                 ;VIDE DIRETRIZ "DE" NO APÊNDICE B
+                      00098 
+                      00099 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00100 ;*                       VETOR DE RESET                            *
+                      00101 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00102 
+                      00103         ORG     0x00    ;ENDEREÇO INICIAL DE PROCESSAMENTO
+0000   2???           00104         GOTO    INICIO
+                      00105         
+                      00106 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00107 ;*                    INÍCIO DA INTERRUPÇÃO                        *
+                      00108 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00109 ; AS INTERRUPÇÕES NÃO SERÃO UTILIZADAS, POR ISSO PODEMOS SUBSTITUIR
+                      00110 ; TODO O SISTEMA EXISTENTE NO ARQUIVO MODELO PELO APRESENTADO ABAIXO
+                      00111 ; ESTE SISTEMA NÃO É OBRIGATÓRIO, MAS PODE EVITAR PROBLEMAS FUTUROS
+                      00112 
+                      00113         ORG     0x04            ;ENDEREÇO INICIAL DA INTERRUPÇÃO
+0004   0009           00114         RETFIE                  ;RETORNA DA INTERRUPÇÃO
+                      00115 
+                      00116 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00117 ;*                 ROTINA DE CONVERSÃO BINÁRIO -> DISPLAY          *
+                      00118 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00119 ; ESTA ROTINA IRÁ RETORNAR EM W, O SIMBOLO CORRETO QUE DEVE SER
+                      00120 ; MOSTRADO NO DISPLAY PARA CADA VALOR DE CONTADOR. O RETORNO JÁ ESTÁ
+                      00121 ; FORMATADO PARA AS CONDIÇÕES DE LIGAÇÃO DO DISPLAY AO PORTB.
+                      00122 ;          a
+                      00123 ;     **********
+                      00124 ;     *        *
+                      00125 ;   f *        * b
+                      00126 ;     *    g   *
+                      00127 ;     **********
+                      00128 ;     *        *
+                      00129 ;   e *        * c
+                      00130 ;     *    d   *
+                      00131 ;     **********  *.
+                      00132 
+0005                  00133 CONVERTE
+0005   0822           00134         MOVF    CONTADOR,W      ;COLOCA CONTADOR EM W
+0006   390F           00135         ANDLW   B'00001111'     ;MASCARA VALOR DE CONTADOR
+                      00136                                 ;CONSIDERAR SOMENTE ATÉ 15
+0007   0782           00137         ADDWF   PCL,F
+                      00138 
+                      00139 ;               B'EDC.BAFG'     ; POSIÇÃO CORRETA DOS SEGUIMENTOS
+0008   34EE           00140         RETLW   B'11101110'     ; 00 - RETORNA SÍMBOLO CORRETO 0
+0009   3428           00141         RETLW   B'00101000'     ; 01 - RETORNA SÍMBOLO CORRETO 1
+000A   34CD           00142         RETLW   B'11001101'     ; 02 - RETORNA SÍMBOLO CORRETO 2
+000B   346D           00143         RETLW   B'01101101'     ; 03 - RETORNA SÍMBOLO CORRETO 3
+000C   342B           00144         RETLW   B'00101011'     ; 04 - RETORNA SÍMBOLO CORRETO 4        
+000D   3467           00145         RETLW   B'01100111'     ; 05 - RETORNA SÍMBOLO CORRETO 5        
+000E   34E7           00146         RETLW   B'11100111'     ; 06 - RETORNA SÍMBOLO CORRETO 6        
+000F   342C           00147         RETLW   B'00101100'     ; 07 - RETORNA SÍMBOLO CORRETO 7        
+0010   34EF           00148         RETLW   B'11101111'     ; 08 - RETORNA SÍMBOLO CORRETO 8        
+0011   346F           00149         RETLW   B'01101111'     ; 09 - RETORNA SÍMBOLO CORRETO 9        
+MPASM 5.77                           EX6.ASM   8-13-2019  21:47:45         PAGE  4
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0012   34AF           00150         RETLW   B'10101111'     ; 10 - RETORNA SÍMBOLO CORRETO A        
+0013   34E3           00151         RETLW   B'11100011'     ; 11 - RETORNA SÍMBOLO CORRETO b        
+0014   34C6           00152         RETLW   B'11000110'     ; 12 - RETORNA SÍMBOLO CORRETO C        
+0015   34E9           00153         RETLW   B'11101001'     ; 13 - RETORNA SÍMBOLO CORRETO d        
+0016   34C7           00154         RETLW   B'11000111'     ; 14 - RETORNA SÍMBOLO CORRETO E        
+0017   3487           00155         RETLW   B'10000111'     ; 15 - RETORNA SÍMBOLO CORRETO F        
+                      00156 
+                      00157 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00158 ;*                  ROTINA DE LEITURA NA E2PROM                  *
+                      00159 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00160 ; ESTA ROTINA LÊ O BYTE DO ENDEREÇO ACERTADO POR EEADR E COLOCA
+                      00161 ; O VALOR EM W.
+                      00162 
+0018                  00163 LE_E2PROM
+                      00164 
+0018   1683           00165         BANK1                   ;BANCO 1
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0019   141C           00166         BSF     EECON1,RD       ;PREPARA LEITURA
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+001A   081A           00167         MOVF    EEDATA,W        ;COLOCA DADO EM W
+001B   1283           00168         BANK0
+001C   0008           00169         RETURN                  ;RETORNA
+                      00170 
+                      00171 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00172 ;*                  ROTINA DE ESCRITA NA E2PROM                  *
+                      00173 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00174 ; ESTA ROTINA ESCREVE O DADO PASSSADO EM W NO ENDEREÇO ACERTADO
+                      00175 ; ANTERIORMENTE EM EEADR
+                      00176 
+001D                  00177 ESCR_E2PROM
+001D   1683           00178         BANK1                   ;BANCO 1
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+001E   009A           00179         MOVWF   EEDATA          ;ACERTA DADO PASSADO EM W 
+001F   138B           00180         BCF     INTCON,GIE      ;DESABILITA INTERRUPÇÕES
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0020   151C           00181         BSF     EECON1,WREN     ;HABILITA ESCRITA
+0021   3055           00182         MOVLW   0X55            ;INICIALIZAÇÃO DA ESCRITA
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0022   009D           00183         MOVWF   EECON2
+0023   30AA           00184         MOVLW   0XAA
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0024   009D           00185         MOVWF   EECON2
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0025   149C           00186         BSF     EECON1,WR       ;INICIA ESCRITA
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0026   111C           00187         BCF     EECON1,WREN
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0027   189C           00188         BTFSC   EECON1,WR       ;ACABOU ESCRITA?
+0028   2???           00189         GOTO    $-1             ;NÃO, AGUARDA
+0029   1283           00190         BANK0                   ;SIM, BANCO 0
+002A   178B           00191         BSF     INTCON,GIE      ;HABILITA INTERRUPÇÕES
+002B   0008           00192         RETURN                  ;RETORNA
+                      00193 
+MPASM 5.77                           EX6.ASM   8-13-2019  21:47:45         PAGE  5
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00194 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00195 ;*             ROTINA DE LEITURA DO VALOR DO CONTADOR              *
+                      00196 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00197 ; ESTA ROTINA LÊ O VALOR DA MEMÓRIA E COLOCA O RESULTADO NA
+                      00198 ; VARIÁVEL "CONTADOR".
+                      00199 
+002C                  00200 LE_CONTA
+                      00201 
+002C   3000           00202         MOVLW   POS_MEM
+002D   1683           00203         BANK1
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+002E   009B           00204         MOVWF   EEADR           ;ACERTA O ENDEREÇO PARA LEITURA
+002F   2???           00205         CALL    LE_E2PROM       ;EFETUA A LEITURA DA EEPROM
+0030   00A2           00206         MOVWF   CONTADOR        ;ATUALIZA O CONTADOR
+0031   0008           00207         RETURN                  ;RETORNA
+                      00208 
+                      00209 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00210 ;*             ROTINA DE ESCRITA DO VALOR DO CONTADOR              *
+                      00211 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00212 ; ESTA ROTINA ESCREVE O VALOR ATUAL DE CONTADOR NA MEMÓRIA EEPROM
+                      00213 
+0032                  00214 ESCR_CONTA
+                      00215 
+0032   3000           00216         MOVLW   POS_MEM
+0033   1683           00217         BANK1
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0034   009B           00218         MOVWF   EEADR           ;ACERTA O ENDEREÇO PARA LEITURA
+0035   1283           00219         BANK0
+0036   0822           00220         MOVF    CONTADOR,W      ;COLOCA CONTADOR EM W
+0037   2???           00221         CALL    ESCR_E2PROM     ;EFETUA A ESCRITA EEPROM
+0038   0008           00222         RETURN                  ;RETORNA
+                      00223 
+                      00224 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00225 ;*                     INICIO DO PROGRAMA                          *
+                      00226 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00227         
+0039                  00228 INICIO
+0039   1683           00229         BANK1                   ;ALTERA PARA O BANCO 1
+003A   3006           00230         MOVLW   B'00000110'
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+003B   0085           00231         MOVWF   TRISA           ;DEFINE RA1 E 2 COMO ENTRADA E DEMAIS
+                      00232                                 ;COMO SAÍDAS
+003C   3000           00233         MOVLW   B'00000000'
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+003D   0086           00234         MOVWF   TRISB           ;DEFINE TODO O PORTB COMO SAÍDA
+003E   3080           00235         MOVLW   B'10000000'
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+003F   0081           00236         MOVWF   OPTION_REG      ;PRESCALER 1:2 NO TMR0
+                      00237                                 ;PULL-UPS DESABILITADOS
+                      00238                                 ;AS DEMAIS CONFG. SÃO IRRELEVANTES
+0040   3000           00239         MOVLW   B'00000000'
+0041   008B           00240         MOVWF   INTCON          ;TODAS AS INTERRUPÇÕES DESLIGADAS
+0042   1283           00241         BANK0                   ;RETORNA PARA O BANCO 0
+MPASM 5.77                           EX6.ASM   8-13-2019  21:47:45         PAGE  6
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0043   3007           00242         MOVLW   B'00000111'
+0044   009F           00243         MOVWF   CMCON           ;DEFINE O MODO DE OPERAÇÃO DO COMPARADOR ANALÓGICO
+                      00244 
+                      00245 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00246 ;*                     INICIALIZAÇÃO DAS VARIÁVEIS                 *
+                      00247 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00248 
+0045   0185           00249         CLRF    PORTA           ;LIMPA O PORTA
+0046   0186           00250         CLRF    PORTB           ;LIMPA O PORTB
+0047   01A3           00251         CLRF    FLAGS           ;LIMPA TODOS OS FLAGS
+0048   2???           00252         CALL    LE_CONTA        ;INICIALIZA CONTADOR COM VALOR
+                      00253                                 ;DA EEPROM
+0049   2???           00254         GOTO    ATUALIZA        ;ATUALIZA O DISPLAY INICIALMENTE
+                      00255 
+                      00256 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00257 ;*                     ROTINA PRINCIPAL                            *
+                      00258 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+004A                  00259 MAIN
+004A   30FF           00260         MOVLW   T_FILTRO
+                      00261 
+004B   00A4           00262         MOVWF   FILTRO1         ;INICIALIZA FILTRO1 = T_FILTRO
+004C   00A5           00263         MOVWF   FILTRO2         ;INICIALIZA FILTRO2 = T_FILTRO
+                      00264 
+004D                  00265 CHECA_BT1
+                      00266 
+004D   1885           00267         BTFSC   BOTAO1          ;O BOTÃO 1 ESTÁ PRESSIONADO?
+004E   2???           00268         GOTO    BT1_LIB         ;NÃO, ENTÃO TRATA COMO LIBERADO
+                      00269                                 ;SIM
+                      00270 
+004F   0BA4           00271         DECFSZ  FILTRO1,F       ;DECREMENTA O FILTRO DO BOTÃO
+                      00272                                 ;TERMINOU?
+0050   2???           00273         GOTO    CHECA_BT1       ;NÃO, CONTINUA ESPERANDO
+                      00274                                 ;SIM
+                      00275 
+0051   1C23           00276         BTFSS   ST_BT1          ;BOTÃO JÁ ESTAVA PRESSIONADO?
+0052   2???           00277         GOTO    DEC             ;NÃO, EXECUTA AÇÃO DO BOTÃO
+0053   2???           00278         GOTO    CHECA_BT2       ;SIM, CHECA BOTÃO 2
+                      00279 
+0054                  00280 BT1_LIB
+0054   1023           00281         BCF     ST_BT1          ;MARCA BOTÃO 1 COMO LIBERADO
+                      00282 
+0055                  00283 CHECA_BT2
+                      00284 
+0055   1905           00285         BTFSC   BOTAO2          ;O BOTÃO 2 ESTÁ PRESSIONADO?
+0056   2???           00286         GOTO    BT2_LIB         ;NÃO, ENTÃO TRATA COMO LIBERADO
+                      00287                                 ;SIM
+0057   0BA5           00288         DECFSZ  FILTRO2,F       ;DECREMENTA O FILTRO DO BOTÃO
+                      00289                                 ;TERMINOU?
+0058   2???           00290         GOTO    CHECA_BT2       ;NÃO, CONTINUA ESPERANDO
+                      00291                                 ;SIM
+0059   1CA3           00292         BTFSS   ST_BT2          ;BOTÃO JÁ ESTAVA PRESSIONADO?
+005A   2???           00293         GOTO    INC             ;NÃO, EXECUTA AÇÃO DO BOTÃO
+005B   2???           00294         GOTO    MAIN            ;SIM, VOLTA AO LOOPING
+MPASM 5.77                           EX6.ASM   8-13-2019  21:47:45         PAGE  7
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00295 
+005C                  00296 BT2_LIB
+005C   10A3           00297         BCF     ST_BT2          ;MARCA BOTÃO 2 COMO LIBERADO
+005D   2???           00298         GOTO    MAIN            ;RETORNA AO LOOPING
+                      00299 
+005E                  00300 DEC                             ;AÇÃO DE DECREMENTAR
+005E   1423           00301         BSF     ST_BT1          ;MARCA BOTÃO 1 COMO JÁ PRESSIONADO
+005F   0822           00302         MOVF    CONTADOR,W      ;COLOCA CONTADOR EM W
+0060   3A00           00303         XORLW   MIN             ;APLICA XOR ENTRE CONTADOR E MIN
+                      00304                                 ;PARA TESTAR IGUALDADE. SE FOREM
+                      00305                                 ;IGUAIS, O RESULTADO SERÁ ZERO
+0061   1903           00306         BTFSC   STATUS,Z        ;RESULTOU EM ZERO?
+0062   2???           00307         GOTO    MAIN            ;SIM, RETORNA SEM AFETAR CONT.
+                      00308                                 ;NÃO
+0063   03A2           00309         DECF    CONTADOR,F      ;DECREMENTA O CONTADOR
+0064   2???           00310         CALL    ESCR_CONTA      ;ATUALIZA O VALOR DE CONTADOR NA 
+                      00311                                 ;EEPROM
+0065   2???           00312         GOTO    ATUALIZA        ;ATUALIZA O DISPLAY
+                      00313 
+0066                  00314 INC                             ;AÇÃO DE INCREMENTAR
+0066   14A3           00315         BSF     ST_BT2          ;MARCA BOTÃO 2 COMO JÁ PRESSIONADO
+0067   0822           00316         MOVF    CONTADOR,W      ;COLOCA CONTADOR EM W
+0068   3A0F           00317         XORLW   MAX             ;APLICA XOR ENTRE CONTADOR E MAX
+                      00318                                 ;PARA TESTAR IGUALDADE. SE FOREM
+                      00319                                 ;IGUAIS, O RESULTADO SERÁ ZERO
+0069   1903           00320         BTFSC   STATUS,Z        ;RESULTOU EM ZERO?
+006A   2???           00321         GOTO    MAIN            ;SIM, RETORNA SEM AFETAR CONT.
+                      00322                                 ;NÃO
+006B   0AA2           00323         INCF    CONTADOR,F      ;INCREMENTA O CONTADOR
+006C   2???           00324         CALL    ESCR_CONTA      ;ATUALIZA O VALOR DE CONTADOR NA 
+                      00325                                 ;EEPROM
+                      00326 
+006D                  00327 ATUALIZA                        ;ATUALIZAÇÃO DO DISPLAY
+006D   2???           00328         CALL    CONVERTE        ;CONVERTE CONTADOR NO NÚMERO DO
+                      00329                                 ;DISPLAY
+006E   0086           00330         MOVWF   PORTB           ;ATUALIZA O PORTB PARA
+                      00331                                 ;VISUALIZARMOS O VALOR DE CONTADOR
+                      00332                                 ;NO DISPLAY
+006F   2???           00333         GOTO    MAIN            ;NÃO, VOLTA AO LOOP PRINCIPAL
+                      00334 
+                      00335 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00336 ;*                       FIM DO PROGRAMA                           *
+                      00337 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00338 
+3F61                  00339         END                     ;OBRIGATÓRIO
+MPASM 5.77                           EX6.ASM   8-13-2019  21:47:45         PAGE  8
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+ADDEN                             00000003
+ADEN                              00000003
+ATUALIZA                          0000006D
+BANK0                             BCF STATUS,RP0
+BANK1                             BSF STATUS,RP0
+BOTAO1                            PORTA,1
+BOTAO2                            PORTA,2
+BRGH                              00000002
+BT1_LIB                           00000054
+BT2_LIB                           0000005C
+C                                 00000000
+C1INV                             00000004
+C1OUT                             00000006
+C2INV                             00000005
+C2OUT                             00000007
+CCP1CON                           00000017
+CCP1IE                            00000002
+CCP1IF                            00000002
+CCP1M0                            00000000
+CCP1M1                            00000001
+CCP1M2                            00000002
+CCP1M3                            00000003
+CCP1X                             00000005
+CCP1Y                             00000004
+CCPR1                             00000015
+CCPR1H                            00000016
+CCPR1L                            00000015
+CHECA_BT1                         0000004D
+CHECA_BT2                         00000055
+CIS                               00000003
+CM0                               00000000
+CM1                               00000001
+CM2                               00000002
+CMCON                             0000001F
+CMIE                              00000006
+CMIF                              00000006
+CONTADOR                          00000022
+CONVERTE                          00000005
+CREN                              00000004
+CSRC                              00000007
+DATA_CP_OFF                       00003FFF
+DATA_CP_ON                        00003EFF
+DC                                00000001
+DEC                               0000005E
+EEADR                             0000009B
+EECON1                            0000009C
+EECON2                            0000009D
+EEDATA                            0000009A
+EEIE                              00000007
+EEIF                              00000007
+ESCR_CONTA                        00000032
+ESCR_E2PROM                       0000001D
+F                                 00000001
+MPASM 5.77                           EX6.ASM   8-13-2019  21:47:45         PAGE  9
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+FERR                              00000002
+FILTRO1                           00000024
+FILTRO2                           00000025
+FLAGS                             00000023
+FSR                               00000004
+GIE                               00000007
+INC                               00000066
+INDF                              00000000
+INICIO                            00000039
+INTCON                            0000000B
+INTE                              00000004
+INTEDG                            00000006
+INTF                              00000001
+IRP                               00000007
+LE_CONTA                          0000002C
+LE_E2PROM                         00000018
+MAIN                              0000004A
+MAX                               0000000F
+MIN                               00000000
+NOT_BO                            00000000
+NOT_BOD                           00000000
+NOT_BOR                           00000000
+NOT_PD                            00000003
+NOT_POR                           00000001
+NOT_RBPU                          00000007
+NOT_T1SYNC                        00000002
+NOT_TO                            00000004
+OERR                              00000001
+OPTION_REG                        00000081
+OSCF                              00000003
+PCL                               00000002
+PCLATH                            0000000A
+PCON                              0000008E
+PEIE                              00000006
+PIE1                              0000008C
+PIR1                              0000000C
+PORTA                             00000005
+PORTB                             00000006
+POS_MEM                           00000000
+PR2                               00000092
+PS0                               00000000
+PS1                               00000001
+PS2                               00000002
+PSA                               00000003
+RA0                               00000000
+RA1                               00000001
+RA2                               00000002
+RA3                               00000003
+RA4                               00000004
+RA5                               00000005
+RA6                               00000006
+RA7                               00000007
+RB0                               00000000
+MPASM 5.77                           EX6.ASM   8-13-2019  21:47:45         PAGE 10
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+RB1                               00000001
+RB2                               00000002
+RB3                               00000003
+RB4                               00000004
+RB5                               00000005
+RB6                               00000006
+RB7                               00000007
+RBIE                              00000003
+RBIF                              00000000
+RCIE                              00000005
+RCIF                              00000005
+RCREG                             0000001A
+RCSTA                             00000018
+RD                                00000000
+RP0                               00000005
+RP1                               00000006
+RX9                               00000006
+RX9D                              00000000
+SPBRG                             00000099
+SPEN                              00000007
+SREN                              00000005
+STATUS                            00000003
+STATUS_TEMP                       00000021
+ST_BT1                            FLAGS,0
+ST_BT2                            FLAGS,1
+SYNC                              00000004
+T0CS                              00000005
+T0IE                              00000005
+T0IF                              00000002
+T0SE                              00000004
+T1CKPS0                           00000004
+T1CKPS1                           00000005
+T1CON                             00000010
+T1OSCEN                           00000003
+T2CKPS0                           00000000
+T2CKPS1                           00000001
+T2CON                             00000012
+TMR0                              00000001
+TMR0IE                            00000005
+TMR0IF                            00000002
+TMR1                              0000000E
+TMR1CS                            00000001
+TMR1H                             0000000F
+TMR1IE                            00000000
+TMR1IF                            00000000
+TMR1L                             0000000E
+TMR1ON                            00000000
+TMR2                              00000011
+TMR2IE                            00000001
+TMR2IF                            00000001
+TMR2ON                            00000002
+TOUTPS0                           00000003
+TOUTPS1                           00000004
+MPASM 5.77                           EX6.ASM   8-13-2019  21:47:45         PAGE 11
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+TOUTPS2                           00000005
+TOUTPS3                           00000006
+TRISA                             00000085
+TRISA0                            00000000
+TRISA1                            00000001
+TRISA2                            00000002
+TRISA3                            00000003
+TRISA4                            00000004
+TRISA5                            00000005
+TRISA6                            00000006
+TRISA7                            00000007
+TRISB                             00000086
+TRISB0                            00000000
+TRISB1                            00000001
+TRISB2                            00000002
+TRISB3                            00000003
+TRISB4                            00000004
+TRISB5                            00000005
+TRISB6                            00000006
+TRISB7                            00000007
+TRMT                              00000001
+TX9                               00000006
+TX9D                              00000000
+TXEN                              00000005
+TXIE                              00000004
+TXIF                              00000004
+TXREG                             00000019
+TXSTA                             00000098
+T_FILTRO                          000000FF
+VR0                               00000000
+VR1                               00000001
+VR2                               00000002
+VR3                               00000003
+VRCON                             0000009F
+VREN                              00000007
+VROE                              00000006
+VRR                               00000005
+W                                 00000000
+WR                                00000001
+WREN                              00000002
+WRERR                             00000003
+W_TEMP                            00000020
+Z                                 00000002
+_.org_2_0028                      00000028
+_BODEN_OFF                        00003FBF
+_BODEN_ON                         00003FFF
+_BOREN_OFF                        00003FBF
+_BOREN_ON                         00003FFF
+_CONFIG                           00002007
+_CPD_OFF                          00003FFF
+_CPD_ON                           00003EFF
+_CP_OFF                           00003FFF
+_CP_ON                            00001FFF
+MPASM 5.77                           EX6.ASM   8-13-2019  21:47:45         PAGE 12
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+_DEVID1                           00002006
+_ER_OSC_CLKOUT                    00003FFF
+_ER_OSC_NOCLKOUT                  00003FFE
+_EXTCLK_OSC                       00003FEF
+_FOSC_ECIO                        00003FEF
+_FOSC_EXTRCCLK                    00003FFF
+_FOSC_EXTRCIO                     00003FFE
+_FOSC_HS                          00003FEE
+_FOSC_INTOSCCLK                   00003FFD
+_FOSC_INTOSCIO                    00003FFC
+_FOSC_LP                          00003FEC
+_FOSC_XT                          00003FED
+_HS_OSC                           00003FEE
+_IDLOC0                           00002000
+_IDLOC1                           00002001
+_IDLOC2                           00002002
+_IDLOC3                           00002003
+_INTOSC_OSC_CLKOUT                00003FFD
+_INTOSC_OSC_NOCLKOUT              00003FFC
+_INTRC_OSC_CLKOUT                 00003FFD
+_INTRC_OSC_NOCLKOUT               00003FFC
+_LP_OSC                           00003FEC
+_LVP_OFF                          00003F7F
+_LVP_ON                           00003FFF
+_MCLRE_OFF                        00003FDF
+_MCLRE_ON                         00003FFF
+_PWRTE_OFF                        00003FFF
+_PWRTE_ON                         00003FF7
+_RC_OSC_CLKOUT                    00003FFF
+_RC_OSC_NOCLKOUT                  00003FFE
+_WDTE_OFF                         00003FFB
+_WDTE_ON                          00003FFF
+_WDT_OFF                          00003FFB
+_WDT_ON                           00003FFF
+_XT_OSC                           00003FED
+__16F628A                         00000001
+__DEBUG                           
+
+Errors   :     0
+Warnings :     0 reported,     0 suppressed
+Messages :    14 reported,     0 suppressed
+
+

@@ -1,0 +1,437 @@
+MPASM 5.77                           EX1.ASM   8-13-2019  21:36:58         PAGE  1
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00001 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00002 ;*                       BOTÃO E LED - EX1                         *
+                      00003 ;*                       DESBRAVANDO O PIC                         *
+                      00004 ;*       DESENVOLVIDO PELA MOSAICO ENGENHARIA E CONSULTORIA        *
+                      00005 ;*      VERSÃO: 1.0                             DATA: 10/10/01     *
+                      00006 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00007 ;*                      DESCRIÇÃO DO ARQUIVO                       *
+                      00008 ;*-----------------------------------------------------------------*
+                      00009 ;*  SISTEMA MUITO SIMPLES PARA REPRESENTAR O ESTADO DE             *
+                      00010 ;*  UM BOTÃO ATRAVÉS DE UM LED.                                    *
+                      00011 ;*                                                                 *
+                      00012 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00013 
+                      00014 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00015 ;*                     ARQUIVOS DE DEFINIÇÕES                      *
+                      00016 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00017 
+                      00018 #INCLUDE <P16F628A.INC>         ;ARQUIVO PADRÃO MICROCHIP PARA 16F628A
+                      00001         LIST
+                      00002 
+                      00003 ;==========================================================================
+                      00004 ; Build date : Nov 22 2017
+                      00005 ;  MPASM PIC16F628A processor include
+                      00006 ; 
+                      00007 ;  (c) Copyright 1999-2017 Microchip Technology, All rights reserved
+                      00008 ;==========================================================================
+                      00009 
+                      00386         LIST
+2007   3F61           00019         __CONFIG  _BODEN_ON & _CP_OFF & _PWRTE_ON & _WDT_OFF & _LVP_OFF & _MCLRE_ON & _XT_OSC
+                      00020 
+                      00021 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00022 ;*                    PAGINAÇÃO DE MEMÓRIA                         *
+                      00023 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00024 ;DEFINIÇÃO DE COMANDOS DE USUÁRIO PARA ALTERAÇÃO DA PÁGINA DE MEMÓRIA
+                      00025 
+                      00026 #DEFINE BANK0   BCF STATUS,RP0  ;SETA BANK 0 DE MEMÓRIA
+                      00027 #DEFINE BANK1   BSF STATUS,RP0  ;SETA BANK 1 DE MAMÓRIA
+                      00028 
+                      00029 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00030 ;*                         VARIÁVEIS                               *
+                      00031 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00032 ; DEFINIÇÃO DOS NOMES E ENDEREÇOS DE TODAS AS VARIÁVEIS UTILIZADAS 
+                      00033 ; PELO SISTEMA
+                      00034 
+                      00035         CBLOCK  0x20            ;ENDEREÇO INICIAL DA MEMÓRIA DE
+                      00036                                 ;USUÁRIO
+                      00037 
+  00000020            00038                 W_TEMP          ;REGISTRADORES TEMPORÁRIOS PARA
+  00000021            00039                 STATUS_TEMP     ;INTERRUPÇÕES
+                      00040                                 ;ESTAS VARIÁVEIS NEM SERÃO UTI-
+                      00041                                 ;LIZADAS
+                      00042         ENDC                    ;FIM DO BLOCO DE MEMÓRIA                
+                      00043 
+MPASM 5.77                           EX1.ASM   8-13-2019  21:36:58         PAGE  2
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00044 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00045 ;*                        FLAGS INTERNOS                           *
+                      00046 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00047 ; DEFINIÇÃO DE TODOS OS FLAGS UTILIZADOS PELO SISTEMA
+                      00048 
+                      00049 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00050 ;*                         CONSTANTES                              *
+                      00051 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00052 ; DEFINIÇÃO DE TODAS AS CONSTANTES UTILIZADAS PELO SISTEMA
+                      00053 
+                      00054 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00055 ;*                           ENTRADAS                              *
+                      00056 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00057 ; DEFINIÇÃO DE TODOS OS PINOS QUE SERÃO UTILIZADOS COMO ENTRADA
+                      00058 ; RECOMENDAMOS TAMBÉM COMENTAR O SIGNIFICADO DE SEUS ESTADOS (0 E 1)
+                      00059 
+                      00060 #DEFINE BOTAO   PORTA,2 ;PORTA DO BOTÃO
+                      00061                         ; 0 -> PRESSIONADO
+                      00062                         ; 1 -> LIBERADO
+                      00063 
+                      00064 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00065 ;*                           SAÍDAS                                *
+                      00066 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00067 ; DEFINIÇÃO DE TODOS OS PINOS QUE SERÃO UTILIZADOS COMO SAÍDA
+                      00068 ; RECOMENDAMOS TAMBÉM COMENTAR O SIGNIFICADO DE SEUS ESTADOS (0 E 1)
+                      00069 
+                      00070 #DEFINE LED     PORTB,0 ;PORTA DO LED
+                      00071                         ; 0 -> APAGADO
+                      00072                         ; 1 -> ACESO
+                      00073 
+                      00074 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00075 ;*                       VETOR DE RESET                            *
+                      00076 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00077 
+                      00078         ORG     0x00    ;ENDEREÇO INICIAL DE PROCESSAMENTO
+0000   2???           00079         GOTO    INICIO
+                      00080         
+                      00081 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00082 ;*                    INÍCIO DA INTERRUPÇÃO                        *
+                      00083 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00084 ; AS INTERRUPÇÕES NÃO SERÃO UTILIZADAS, POR ISSO PODEMOS SUBSTITUIR
+                      00085 ; TODO O SISTEMA EXISTENTE NO ARQUIVO MODELO PELO APRESENTADO ABAIXO
+                      00086 ; ESTE SISTEMA NÃO É OBRIGATÓRIO, MAS PODE EVITAR PROBLEMAS FUTUROS
+                      00087 
+                      00088         ORG     0x04            ;ENDEREÇO INICIAL DA INTERRUPÇÃO
+0004   0009           00089         RETFIE                  ;RETORNA DA INTERRUPÇÃO
+                      00090 
+                      00091 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00092 ;*                     INICIO DO PROGRAMA                          *
+                      00093 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00094         
+0005                  00095 INICIO
+0005   1283           00096         BANK0                   ;ALTERA PARA O BANCO 0
+MPASM 5.77                           EX1.ASM   8-13-2019  21:36:58         PAGE  3
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0006   3007           00097         MOVLW   B'00000111'
+0007   009F           00098         MOVWF   CMCON           ;DEFINE O MODO DE OPERAÇÃO DO COMPARADOR ANALÓGICO
+                      00099 
+0008   0185           00100         CLRF    PORTA           ;LIMPA O PORTA
+0009   0186           00101         CLRF    PORTB           ;LIMPA O PORTB
+                      00102 
+000A   1683           00103         BANK1                   ;ALTERA PARA O BANCO 1
+000B   3004           00104         MOVLW   B'00000100'
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+000C   0085           00105         MOVWF   TRISA           ;DEFINE RA2 COMO ENTRADA E DEMAIS
+                      00106                                 ;COMO SAÍDAS
+000D   3000           00107         MOVLW   B'00000000'
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+000E   0086           00108         MOVWF   TRISB           ;DEFINE TODO O PORTB COMO SAÍDA
+000F   3080           00109         MOVLW   B'10000000'
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0010   0081           00110         MOVWF   OPTION_REG      ;PRESCALER 1:2 NO TMR0
+                      00111                                 ;PULL-UPS DESABILITADOS
+                      00112                                 ;AS DEMAIS CONFG. SÃO IRRELEVANTES
+0011   3000           00113         MOVLW   B'00000000'
+0012   008B           00114         MOVWF   INTCON          ;TODAS AS INTERRUPÇÕES DESLIGADAS
+0013   1283           00115         BANK0                   ;RETORNA PARA O BANCO 0
+                      00116 
+                      00117 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00118 ;*                     INICIALIZAÇÃO DAS VARIÁVEIS                 *
+                      00119 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00120 
+                      00121 
+                      00122 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00123 ;*                     ROTINA PRINCIPAL                            *
+                      00124 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+0014                  00125 MAIN
+                      00126 
+0014   1905           00127         BTFSC   BOTAO           ;O BOTÃO ESTÁ PRESSIONADO?
+0015   2???           00128         GOTO    BOTAO_LIB       ;NÃO, ENTÃO TRATA BOTÃO LIBERADO
+0016   2???           00129         GOTO    BOTAO_PRES      ;SIM, ENTÃO TRATA BOTÃO PRESSIONADO
+                      00130 
+0017                  00131 BOTAO_LIB
+0017   1006           00132         BCF     LED             ;APAGA O LED
+0018   2???           00133         GOTO    MAIN            ;RETORNA AO LOOP PRINCIPAL
+                      00134 
+0019                  00135 BOTAO_PRES
+0019   1406           00136         BSF     LED             ;ACENDE O LED
+001A   2???           00137         GOTO    MAIN            ;RETORNA AO LOOP PRINCIPAL
+                      00138 
+                      00139 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00140 ;*                       FIM DO PROGRAMA                           *
+                      00141 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00142 
+3F61                  00143         END                     ;OBRIGATÓRIO
+MPASM 5.77                           EX1.ASM   8-13-2019  21:36:58         PAGE  4
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+ADDEN                             00000003
+ADEN                              00000003
+BANK0                             BCF STATUS,RP0
+BANK1                             BSF STATUS,RP0
+BOTAO                             PORTA,2
+BOTAO_LIB                         00000017
+BOTAO_PRES                        00000019
+BRGH                              00000002
+C                                 00000000
+C1INV                             00000004
+C1OUT                             00000006
+C2INV                             00000005
+C2OUT                             00000007
+CCP1CON                           00000017
+CCP1IE                            00000002
+CCP1IF                            00000002
+CCP1M0                            00000000
+CCP1M1                            00000001
+CCP1M2                            00000002
+CCP1M3                            00000003
+CCP1X                             00000005
+CCP1Y                             00000004
+CCPR1                             00000015
+CCPR1H                            00000016
+CCPR1L                            00000015
+CIS                               00000003
+CM0                               00000000
+CM1                               00000001
+CM2                               00000002
+CMCON                             0000001F
+CMIE                              00000006
+CMIF                              00000006
+CREN                              00000004
+CSRC                              00000007
+DATA_CP_OFF                       00003FFF
+DATA_CP_ON                        00003EFF
+DC                                00000001
+EEADR                             0000009B
+EECON1                            0000009C
+EECON2                            0000009D
+EEDATA                            0000009A
+EEIE                              00000007
+EEIF                              00000007
+F                                 00000001
+FERR                              00000002
+FSR                               00000004
+GIE                               00000007
+INDF                              00000000
+INICIO                            00000005
+INTCON                            0000000B
+INTE                              00000004
+INTEDG                            00000006
+INTF                              00000001
+MPASM 5.77                           EX1.ASM   8-13-2019  21:36:58         PAGE  5
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+IRP                               00000007
+LED                               PORTB,0
+MAIN                              00000014
+NOT_BO                            00000000
+NOT_BOD                           00000000
+NOT_BOR                           00000000
+NOT_PD                            00000003
+NOT_POR                           00000001
+NOT_RBPU                          00000007
+NOT_T1SYNC                        00000002
+NOT_TO                            00000004
+OERR                              00000001
+OPTION_REG                        00000081
+OSCF                              00000003
+PCL                               00000002
+PCLATH                            0000000A
+PCON                              0000008E
+PEIE                              00000006
+PIE1                              0000008C
+PIR1                              0000000C
+PORTA                             00000005
+PORTB                             00000006
+PR2                               00000092
+PS0                               00000000
+PS1                               00000001
+PS2                               00000002
+PSA                               00000003
+RA0                               00000000
+RA1                               00000001
+RA2                               00000002
+RA3                               00000003
+RA4                               00000004
+RA5                               00000005
+RA6                               00000006
+RA7                               00000007
+RB0                               00000000
+RB1                               00000001
+RB2                               00000002
+RB3                               00000003
+RB4                               00000004
+RB5                               00000005
+RB6                               00000006
+RB7                               00000007
+RBIE                              00000003
+RBIF                              00000000
+RCIE                              00000005
+RCIF                              00000005
+RCREG                             0000001A
+RCSTA                             00000018
+RD                                00000000
+RP0                               00000005
+RP1                               00000006
+RX9                               00000006
+MPASM 5.77                           EX1.ASM   8-13-2019  21:36:58         PAGE  6
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+RX9D                              00000000
+SPBRG                             00000099
+SPEN                              00000007
+SREN                              00000005
+STATUS                            00000003
+STATUS_TEMP                       00000021
+SYNC                              00000004
+T0CS                              00000005
+T0IE                              00000005
+T0IF                              00000002
+T0SE                              00000004
+T1CKPS0                           00000004
+T1CKPS1                           00000005
+T1CON                             00000010
+T1OSCEN                           00000003
+T2CKPS0                           00000000
+T2CKPS1                           00000001
+T2CON                             00000012
+TMR0                              00000001
+TMR0IE                            00000005
+TMR0IF                            00000002
+TMR1                              0000000E
+TMR1CS                            00000001
+TMR1H                             0000000F
+TMR1IE                            00000000
+TMR1IF                            00000000
+TMR1L                             0000000E
+TMR1ON                            00000000
+TMR2                              00000011
+TMR2IE                            00000001
+TMR2IF                            00000001
+TMR2ON                            00000002
+TOUTPS0                           00000003
+TOUTPS1                           00000004
+TOUTPS2                           00000005
+TOUTPS3                           00000006
+TRISA                             00000085
+TRISA0                            00000000
+TRISA1                            00000001
+TRISA2                            00000002
+TRISA3                            00000003
+TRISA4                            00000004
+TRISA5                            00000005
+TRISA6                            00000006
+TRISA7                            00000007
+TRISB                             00000086
+TRISB0                            00000000
+TRISB1                            00000001
+TRISB2                            00000002
+TRISB3                            00000003
+TRISB4                            00000004
+TRISB5                            00000005
+TRISB6                            00000006
+MPASM 5.77                           EX1.ASM   8-13-2019  21:36:58         PAGE  7
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+TRISB7                            00000007
+TRMT                              00000001
+TX9                               00000006
+TX9D                              00000000
+TXEN                              00000005
+TXIE                              00000004
+TXIF                              00000004
+TXREG                             00000019
+TXSTA                             00000098
+VR0                               00000000
+VR1                               00000001
+VR2                               00000002
+VR3                               00000003
+VRCON                             0000009F
+VREN                              00000007
+VROE                              00000006
+VRR                               00000005
+W                                 00000000
+WR                                00000001
+WREN                              00000002
+WRERR                             00000003
+W_TEMP                            00000020
+Z                                 00000002
+_BODEN_OFF                        00003FBF
+_BODEN_ON                         00003FFF
+_BOREN_OFF                        00003FBF
+_BOREN_ON                         00003FFF
+_CONFIG                           00002007
+_CPD_OFF                          00003FFF
+_CPD_ON                           00003EFF
+_CP_OFF                           00003FFF
+_CP_ON                            00001FFF
+_DEVID1                           00002006
+_ER_OSC_CLKOUT                    00003FFF
+_ER_OSC_NOCLKOUT                  00003FFE
+_EXTCLK_OSC                       00003FEF
+_FOSC_ECIO                        00003FEF
+_FOSC_EXTRCCLK                    00003FFF
+_FOSC_EXTRCIO                     00003FFE
+_FOSC_HS                          00003FEE
+_FOSC_INTOSCCLK                   00003FFD
+_FOSC_INTOSCIO                    00003FFC
+_FOSC_LP                          00003FEC
+_FOSC_XT                          00003FED
+_HS_OSC                           00003FEE
+_IDLOC0                           00002000
+_IDLOC1                           00002001
+_IDLOC2                           00002002
+_IDLOC3                           00002003
+_INTOSC_OSC_CLKOUT                00003FFD
+_INTOSC_OSC_NOCLKOUT              00003FFC
+_INTRC_OSC_CLKOUT                 00003FFD
+_INTRC_OSC_NOCLKOUT               00003FFC
+MPASM 5.77                           EX1.ASM   8-13-2019  21:36:58         PAGE  8
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+_LP_OSC                           00003FEC
+_LVP_OFF                          00003F7F
+_LVP_ON                           00003FFF
+_MCLRE_OFF                        00003FDF
+_MCLRE_ON                         00003FFF
+_PWRTE_OFF                        00003FFF
+_PWRTE_ON                         00003FF7
+_RC_OSC_CLKOUT                    00003FFF
+_RC_OSC_NOCLKOUT                  00003FFE
+_WDTE_OFF                         00003FFB
+_WDTE_ON                          00003FFF
+_WDT_OFF                          00003FFB
+_WDT_ON                           00003FFF
+_XT_OSC                           00003FED
+__16F628A                         00000001
+
+Errors   :     0
+Warnings :     0 reported,     0 suppressed
+Messages :     3 reported,     0 suppressed
+
+

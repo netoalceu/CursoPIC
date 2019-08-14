@@ -1,0 +1,83 @@
+Version 3.2 HI-TECH Software Intermediate Code
+"32 i2c.h
+[v _i2c_start `(v ~T0 @X0 0 ef ]
+"34
+[v _i2c_wb `(v ~T0 @X0 0 ef1`uc ]
+"33
+[v _i2c_stop `(v ~T0 @X0 0 ef ]
+[; ;rtc.h: 26: extern volatile char date[10];
+[; ;rtc.h: 27: extern volatile char time[10];
+[; ;rtc.h: 29: void rtc_w(void);
+[; ;rtc.h: 31: void rtc_r(void);
+[; ;i2c.h: 31: void i2c_init(void);
+[; ;i2c.h: 32: void i2c_start(void);
+[; ;i2c.h: 33: void i2c_stop(void);
+[; ;i2c.h: 34: void i2c_wb(unsigned char val);
+[; ;i2c.h: 35: unsigned char i2c_rb(unsigned char ack);
+[; ;i2c.h: 36: void i2c_acktst(unsigned char val);
+"29 rtc_w.c
+[v _rtc_w `(v ~T0 @X0 1 ef ]
+"30
+{
+[; ;rtc_w.c: 29: void rtc_w(void)
+[; ;rtc_w.c: 30: {
+[e :U _rtc_w ]
+[f ]
+[; ;rtc_w.c: 32: i2c_start();
+"32
+[e ( _i2c_start ..  ]
+[; ;rtc_w.c: 33: i2c_wb(0xA2);
+"33
+[e ( _i2c_wb (1 -> -> 162 `i `uc ]
+[; ;rtc_w.c: 34: i2c_wb(0);
+"34
+[e ( _i2c_wb (1 -> -> 0 `i `uc ]
+[; ;rtc_w.c: 35: i2c_wb(0x20);
+"35
+[e ( _i2c_wb (1 -> -> 32 `i `uc ]
+[; ;rtc_w.c: 36: i2c_wb(0);
+"36
+[e ( _i2c_wb (1 -> -> 0 `i `uc ]
+[; ;rtc_w.c: 37: i2c_wb(0x20);
+"37
+[e ( _i2c_wb (1 -> -> 32 `i `uc ]
+[; ;rtc_w.c: 38: i2c_wb(0x34);
+"38
+[e ( _i2c_wb (1 -> -> 52 `i `uc ]
+[; ;rtc_w.c: 39: i2c_wb(0x11);
+"39
+[e ( _i2c_wb (1 -> -> 17 `i `uc ]
+[; ;rtc_w.c: 40: i2c_wb(0x24);
+"40
+[e ( _i2c_wb (1 -> -> 36 `i `uc ]
+[; ;rtc_w.c: 41: i2c_wb(0x04);
+"41
+[e ( _i2c_wb (1 -> -> 4 `i `uc ]
+[; ;rtc_w.c: 42: i2c_wb(0x02);
+"42
+[e ( _i2c_wb (1 -> -> 2 `i `uc ]
+[; ;rtc_w.c: 43: i2c_wb(0x14);
+"43
+[e ( _i2c_wb (1 -> -> 20 `i `uc ]
+[; ;rtc_w.c: 44: i2c_stop();
+"44
+[e ( _i2c_stop ..  ]
+[; ;rtc_w.c: 45: i2c_start();
+"45
+[e ( _i2c_start ..  ]
+[; ;rtc_w.c: 46: i2c_wb(0xA2);
+"46
+[e ( _i2c_wb (1 -> -> 162 `i `uc ]
+[; ;rtc_w.c: 47: i2c_wb(0);
+"47
+[e ( _i2c_wb (1 -> -> 0 `i `uc ]
+[; ;rtc_w.c: 48: i2c_wb(0);
+"48
+[e ( _i2c_wb (1 -> -> 0 `i `uc ]
+[; ;rtc_w.c: 49: i2c_stop();
+"49
+[e ( _i2c_stop ..  ]
+[; ;rtc_w.c: 51: }
+"51
+[e :UE 1 ]
+}

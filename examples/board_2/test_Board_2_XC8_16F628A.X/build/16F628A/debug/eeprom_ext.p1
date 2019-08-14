@@ -1,0 +1,137 @@
+Version 3.2 HI-TECH Software Intermediate Code
+"32 i2c.h
+[v _i2c_start `(v ~T0 @X0 0 ef ]
+"34
+[v _i2c_wb `(v ~T0 @X0 0 ef1`uc ]
+"35
+[v _i2c_rb `(uc ~T0 @X0 0 ef1`uc ]
+"33
+[v _i2c_stop `(v ~T0 @X0 0 ef ]
+[; ;i2c.h: 31: void i2c_init(void);
+[; ;i2c.h: 32: void i2c_start(void);
+[; ;i2c.h: 33: void i2c_stop(void);
+[; ;i2c.h: 34: void i2c_wb(unsigned char val);
+[; ;i2c.h: 35: unsigned char i2c_rb(unsigned char ack);
+[; ;i2c.h: 36: void i2c_acktst(unsigned char val);
+[; ;eeprom_ext.h: 27: unsigned char e2pext_r(unsigned int addr);
+[; ;eeprom_ext.h: 28: void e2pext_w(unsigned int addr, unsigned char val);
+"29 eeprom_ext.c
+[v _e2pext_r `(uc ~T0 @X0 1 ef1`ui ]
+"30
+{
+[; ;eeprom_ext.c: 29: unsigned char e2pext_r(unsigned int addr)
+[; ;eeprom_ext.c: 30: {
+[e :U _e2pext_r ]
+"29
+[v _addr `ui ~T0 @X0 1 r1 ]
+"30
+[f ]
+"31
+[v _ret `uc ~T0 @X0 1 a ]
+"32
+[v _ah `uc ~T0 @X0 1 a ]
+[; ;eeprom_ext.c: 31: unsigned char ret;
+[; ;eeprom_ext.c: 32: unsigned char ah=(addr&0xFF00)>>8;
+[e = _ah -> >> & _addr -> 65280 `ui -> 8 `i `uc ]
+"33
+[v _al `uc ~T0 @X0 1 a ]
+[; ;eeprom_ext.c: 33: unsigned char al=addr&0x00FF;
+[e = _al -> & _addr -> -> 255 `i `ui `uc ]
+[; ;eeprom_ext.c: 35: i2c_start();
+"35
+[e ( _i2c_start ..  ]
+[; ;eeprom_ext.c: 36: i2c_wb(0xA0);
+"36
+[e ( _i2c_wb (1 -> -> 160 `i `uc ]
+[; ;eeprom_ext.c: 37: i2c_wb(ah);
+"37
+[e ( _i2c_wb (1 _ah ]
+[; ;eeprom_ext.c: 38: i2c_wb(al);
+"38
+[e ( _i2c_wb (1 _al ]
+[; ;eeprom_ext.c: 40: i2c_start();
+"40
+[e ( _i2c_start ..  ]
+[; ;eeprom_ext.c: 41: i2c_wb(0xA1);
+"41
+[e ( _i2c_wb (1 -> -> 161 `i `uc ]
+[; ;eeprom_ext.c: 42: ret=i2c_rb(1);
+"42
+[e = _ret ( _i2c_rb (1 -> -> 1 `i `uc ]
+[; ;eeprom_ext.c: 43: i2c_stop();
+"43
+[e ( _i2c_stop ..  ]
+[; ;eeprom_ext.c: 45: return ret;
+"45
+[e ) _ret ]
+[e $UE 1  ]
+[; ;eeprom_ext.c: 46: }
+"46
+[e :UE 1 ]
+}
+"49
+[v _e2pext_w `(v ~T0 @X0 1 ef2`ui`uc ]
+"50
+{
+[; ;eeprom_ext.c: 49: void e2pext_w(unsigned int addr, unsigned char val)
+[; ;eeprom_ext.c: 50: {
+[e :U _e2pext_w ]
+"49
+[v _addr `ui ~T0 @X0 1 r1 ]
+[v _val `uc ~T0 @X0 1 r2 ]
+"50
+[f ]
+"51
+[v _tmp `ui ~T0 @X0 1 a ]
+[; ;eeprom_ext.c: 51: unsigned int tmp=val;
+[e = _tmp -> _val `ui ]
+"52
+[v _ah `uc ~T0 @X0 1 a ]
+[; ;eeprom_ext.c: 52: unsigned char ah=(addr&0xFF00)>>8;
+[e = _ah -> >> & _addr -> 65280 `ui -> 8 `i `uc ]
+"53
+[v _al `uc ~T0 @X0 1 a ]
+[; ;eeprom_ext.c: 53: unsigned char al=addr&0x00FF;
+[e = _al -> & _addr -> -> 255 `i `ui `uc ]
+"54
+[v _nt `uc ~T0 @X0 1 a ]
+[; ;eeprom_ext.c: 54: unsigned char nt=0;
+[e = _nt -> -> 0 `i `uc ]
+[; ;eeprom_ext.c: 56: do
+"56
+[e :U 5 ]
+[; ;eeprom_ext.c: 57: {
+"57
+{
+[; ;eeprom_ext.c: 58: i2c_start();
+"58
+[e ( _i2c_start ..  ]
+[; ;eeprom_ext.c: 59: i2c_wb(0xA0);
+"59
+[e ( _i2c_wb (1 -> -> 160 `i `uc ]
+[; ;eeprom_ext.c: 60: i2c_wb(ah);
+"60
+[e ( _i2c_wb (1 _ah ]
+[; ;eeprom_ext.c: 61: i2c_wb(al);
+"61
+[e ( _i2c_wb (1 _al ]
+[; ;eeprom_ext.c: 62: i2c_wb(tmp);
+"62
+[e ( _i2c_wb (1 -> _tmp `uc ]
+[; ;eeprom_ext.c: 63: i2c_stop();
+"63
+[e ( _i2c_stop ..  ]
+[; ;eeprom_ext.c: 65: nt++;
+"65
+[e ++ _nt -> -> 1 `i `uc ]
+"66
+}
+[; ;eeprom_ext.c: 66: }
+[; ;eeprom_ext.c: 67: while((tmp != e2pext_r(addr))&&(nt < 10));
+"67
+[e $ && != _tmp -> ( _e2pext_r (1 _addr `ui < -> _nt `i -> 10 `i 5  ]
+[e :U 4 ]
+[; ;eeprom_ext.c: 68: }
+"68
+[e :UE 2 ]
+}

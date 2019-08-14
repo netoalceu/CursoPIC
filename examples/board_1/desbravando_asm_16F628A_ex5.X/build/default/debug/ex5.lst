@@ -1,0 +1,667 @@
+MPASM 5.77                           EX5.ASM   8-13-2019  21:43:17         PAGE  1
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00001 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00002 ;*                    TIMER DE SEGUNDOS - EX5                      *
+                      00003 ;*                       DESBRAVANDO O PIC                         *
+                      00004 ;*       DESENVOLVIDO PELA MOSAICO ENGENHARIA E CONSULTORIA        *
+                      00005 ;*      VERSÃO: 1.0                             DATA: 30/10/01     *
+                      00006 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00007 ;*                      DESCRIÇÃO DO ARQUIVO                       *
+                      00008 ;*-----------------------------------------------------------------*
+                      00009 ;*  TIMER DECRESCENTE EM SEGUNDOS. O VALOR INICIAL É DETERMINADO   *
+                      00010 ;*  PELA CONSTANTE V_INICIO E PODE ESTAR ENTRE 1 E 9 SEGUNDOS.     *
+                      00011 ;*  O BOTÃO 1 DISPARA O TIMER, MOSTRANDO O TEMPO RESTANTE NO       *
+                      00012 ;*  DISPLAY. O BOTÃO 2 PARALIZA O TIMER. O LED É UTILIZADO PARA    *
+                      00013 ;* INDICAR O ESTADO ATUAL DO TIMER: ACESO=RODANDO E APAGADO=PARADO *
+                      00014 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00015 
+                      00016 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00017 ;*                     ARQUIVOS DE DEFINIÇÕES                      *
+                      00018 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00019 
+                      00020 #INCLUDE <P16F628A.INC>         ;ARQUIVO PADRÃO MICROCHIP PARA 16F628A
+                      00001         LIST
+                      00002 
+                      00003 ;==========================================================================
+                      00004 ; Build date : Nov 22 2017
+                      00005 ;  MPASM PIC16F628A processor include
+                      00006 ; 
+                      00007 ;  (c) Copyright 1999-2017 Microchip Technology, All rights reserved
+                      00008 ;==========================================================================
+                      00009 
+                      00386         LIST
+2007   3F61           00021         __CONFIG  _BODEN_ON & _CP_OFF & _PWRTE_ON & _WDT_OFF & _LVP_OFF & _MCLRE_ON & _XT_OSC
+                      00022 
+                      00023 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00024 ;*                    PAGINAÇÃO DE MEMÓRIA                         *
+                      00025 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00026 ;DEFINIÇÃO DE COMANDOS DE USUÁRIO PARA ALTERAÇÃO DA PÁGINA DE MEMÓRIA
+                      00027 
+                      00028 #DEFINE BANK0   BCF STATUS,RP0  ;SETA BANK 0 DE MEMÓRIA
+                      00029 #DEFINE BANK1   BSF STATUS,RP0  ;SETA BANK 1 DE MAMÓRIA
+                      00030 
+                      00031 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00032 ;*                         VARIÁVEIS                               *
+                      00033 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00034 ; DEFINIÇÃO DOS NOMES E ENDEREÇOS DE TODAS AS VARIÁVEIS UTILIZADAS 
+                      00035 ; PELO SISTEMA
+                      00036 
+                      00037         CBLOCK  0x20            ;ENDEREÇO INICIAL DA MEMÓRIA DE
+                      00038                                 ;USUÁRIO
+                      00039 
+  00000020            00040                 W_TEMP          ;REGISTRADORES TEMPORÁRIOS PARA
+  00000021            00041                 STATUS_TEMP     ;INTERRUPÇÕES
+                      00042                                 ;ESTAS VARIÁVEIS NEM SERÃO UTI-
+                      00043                                 ;LIZADAS
+MPASM 5.77                           EX5.ASM   8-13-2019  21:43:17         PAGE  2
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+  00000022            00044                 TEMPO           ;ARMAZENA O VALOR DO TEMPO
+  00000023            00045                 FLAGS           ;ARMAZENA OS FLAGS DE CONTROLE
+  00000024            00046                 TEMP1           ;REGISTRADORES AUXILIARES
+  00000025            00047                 TEMP2
+  00000026            00048                 FILTRO1         ;FILTROS DOS BOTÕES
+  00000027            00049                 FILTRO2 
+                      00050 
+                      00051         ENDC                    ;FIM DO BLOCO DE MEMÓRIA                
+                      00052 
+                      00053 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00054 ;*                        FLAGS INTERNOS                           *
+                      00055 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00056 ; DEFINIÇÃO DE TODOS OS FLAGS UTILIZADOS PELO SISTEMA
+                      00057 
+                      00058 #DEFINE F_FIM   FLAGS,0         ;FLAG DE FIM DE TEMPO
+                      00059 #DEFINE ST_BT1  FLAGS,1         ;STATUS DO BOTÃO 1
+                      00060 #DEFINE ST_BT2  FLAGS,2         ;STATUS DO BOTÃO 2
+                      00061 
+                      00062 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00063 ;*                         CONSTANTES                              *
+                      00064 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00065 ; DEFINIÇÃO DE TODAS AS CONSTANTES UTILIZADAS PELO SISTEMA
+                      00066 
+  0000000F            00067 V_INICIO        EQU     .15     ;VALOR INICIAL DO TIMER (1 A 15 SEG.)
+  000000FF            00068 T_FILTRO        EQU     .255    ;VALOR DO FILTRO DOS BOTÕES
+                      00069         
+                      00070 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00071 ;*                           ENTRADAS                              *
+                      00072 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00073 ; DEFINIÇÃO DE TODOS OS PINOS QUE SERÃO UTILIZADOS COMO ENTRADA
+                      00074 ; RECOMENDAMOS TAMBÉM COMENTAR O SIGNIFICADO DE SEUS ESTADOS (0 E 1)
+                      00075 
+                      00076 #DEFINE BOTAO1  PORTA,1 ;PORTA DO BOTÃO
+                      00077                         ; 0 -> PRESSIONADO
+                      00078                         ; 1 -> LIBERADO
+                      00079 
+                      00080 #DEFINE BOTAO2  PORTA,2 ;PORTA DO BOTÃO
+                      00081                         ; 0 -> PRESSIONADO
+                      00082                         ; 1 -> LIBERADO
+                      00083 
+                      00084 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00085 ;*                           SAÍDAS                                *
+                      00086 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00087 ; DEFINIÇÃO DE TODOS OS PINOS QUE SERÃO UTILIZADOS COMO SAÍDA
+                      00088 ; RECOMENDAMOS TAMBÉM COMENTAR O SIGNIFICADO DE SEUS ESTADOS (0 E 1)
+                      00089 
+                      00090 #DEFINE LED     PORTA,3 ;LED
+                      00091                         ;0 -> DESLIGADO
+                      00092                         ;1 -> LIGADO
+                      00093 
+                      00094 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00095 ;*                       VETOR DE RESET                            *
+                      00096 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+MPASM 5.77                           EX5.ASM   8-13-2019  21:43:17         PAGE  3
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00097 
+                      00098         ORG     0x00    ;ENDEREÇO INICIAL DE PROCESSAMENTO
+0000   2???           00099         GOTO    INICIO
+                      00100         
+                      00101 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00102 ;*                    INÍCIO DA INTERRUPÇÃO                        *
+                      00103 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00104 ; UTILIZAREMOS SOMENTE A INTERRUÇÃO DE TMR0, MAS EFETUAREMOS O TESTE
+                      00105 ; PARA TERMOS CERTEZA DE QUE NENHUM PROBLEMA ACONTECEU. É NECESSÁRIO
+                      00106 ; SALVAR E RECUPERAR OS VALOR DE W E STATUS.
+                      00107 
+                      00108         ORG     0x04            ;ENDEREÇO INICIAL DA INTERRUPÇÃO
+0004   00A0           00109         MOVWF   W_TEMP          ;SALVA W EM W_TEMP
+0005   0E03           00110         SWAPF   STATUS,W        
+0006   00A1           00111         MOVWF   STATUS_TEMP     ;SALVA STATUS EM STATUS_TEMP
+                      00112 
+0007   1D0B           00113         BTFSS   INTCON,T0IF     ;É INTERRUPÇÃO DE TMR0?
+0008   2???           00114         GOTO    SAI_INT         ;NÃO, SAI SE AÇÃO       
+                      00115                                 ;SIM
+                      00116 
+                      00117 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00118 ;*              TRATAMENTO DA INTERRUPÇÃO DE TMR0                  *
+                      00119 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00120 ; ESTA ROTINA IRÁ CONTAR O TEMPO, E QUANDO PASSAR 1 SEGUNDO, A VARI-
+                      00121 ; ÁVEL "TEMPO" SERÁ DECREMENTADA.
+                      00122 ; 1 SEGUNDO = 64us (PRESCALER) X 125 (TMR0) X 125 (TEMP1)
+                      00123 
+0009   110B           00124         BCF     INTCON,T0IF     ;LIMPA FLAG DA INT.
+000A   3083           00125         MOVLW   .256-.125       
+000B   0081           00126         MOVWF   TMR0            ;REINICIA TMR0
+000C   0BA4           00127         DECFSZ  TEMP1,F         ;DECREMENTA CONTADOR AUXILIAR. ACABOU?
+000D   2???           00128         GOTO    SAI_INT         ;NÃO, SAI SEM AÇÃO
+                      00129                                 ;SIM
+000E   307D           00130         MOVLW   .125
+000F   00A4           00131         MOVWF   TEMP1           ;REINICIALIZA TEMPO AUXILIAR
+0010   1823           00132         BTFSC   F_FIM           ;JÁ CHEGOU AO FIM?
+0011   2???           00133         GOTO    SAI_INT         ;SIM, ENTÃO NÃO DECREMENTA O TEMPO
+                      00134                                 ;NÃO
+0012   0BA2           00135         DECFSZ  TEMPO,F         ;DECREMENTA TEMPO. ACABOU?
+0013   2???           00136         GOTO    SAI_INT         ;NÃO, SAI DA INTERRUÇãO
+                      00137                                 ;SIM
+0014   1423           00138         BSF     F_FIM           ;MARCA FIM DO TEMPO
+0015   2???           00139         GOTO    SAI_INT         ;SAI DA INTERRUPÇÃO
+                      00140 
+                      00141 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00142 ;*                       FIM DA INTERRUPÇÃO                        *
+                      00143 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+0016                  00144 SAI_INT
+0016   0E21           00145         SWAPF   STATUS_TEMP,W
+0017   0083           00146         MOVWF   STATUS          ;RECUPERA STATUS
+0018   0EA0           00147         SWAPF   W_TEMP,F
+0019   0E20           00148         SWAPF   W_TEMP,W        ;RECUPERA W
+001A   0009           00149         RETFIE                  ;RETORNA DA INTERRUPÇÃO
+MPASM 5.77                           EX5.ASM   8-13-2019  21:43:17         PAGE  4
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00150 
+                      00151 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00152 ;*                 ROTINA DE CONVERSÃO BINÁRIO -> DISPLAY          *
+                      00153 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00154 ; ESTA ROTINA IRÁ RETORNAR EM W, O SIMBOLO CORRETO QUE DEVE SER
+                      00155 ; MOSTRADO NO DISPLAY PARA CADA VALOR DE CONTADOR. O RETORNO JÁ ESTÁ
+                      00156 ; FORMATADO PARA AS CONDIÇÕES DE LIGAÇÃO DO DISPLAY AO PORTB.
+                      00157 ;          a
+                      00158 ;     **********
+                      00159 ;     *        *
+                      00160 ;   f *        * b
+                      00161 ;     *    g   *
+                      00162 ;     **********
+                      00163 ;     *        *
+                      00164 ;   e *        * c
+                      00165 ;     *    d   *
+                      00166 ;     **********  *.
+                      00167 
+001B                  00168 CONVERTE
+001B   0822           00169         MOVF    TEMPO,W         ;COLOCA CONTADOR EM W
+001C   390F           00170         ANDLW   B'00001111'     ;MASCARA VALOR DE CONTADOR
+                      00171                                 ;CONSIDERAR SOMENTE ATÉ 15
+001D   0782           00172         ADDWF   PCL,F
+                      00173 
+                      00174 ;               B'EDC.BAFG'     ; POSIÇÃO CORRETA DOS SEGUIMENTOS
+001E   34EE           00175         RETLW   B'11101110'     ; 00 - RETORNA SÍMBOLO CORRETO 0
+001F   3428           00176         RETLW   B'00101000'     ; 01 - RETORNA SÍMBOLO CORRETO 1
+0020   34CD           00177         RETLW   B'11001101'     ; 02 - RETORNA SÍMBOLO CORRETO 2
+0021   346D           00178         RETLW   B'01101101'     ; 03 - RETORNA SÍMBOLO CORRETO 3
+0022   342B           00179         RETLW   B'00101011'     ; 04 - RETORNA SÍMBOLO CORRETO 4        
+0023   3467           00180         RETLW   B'01100111'     ; 05 - RETORNA SÍMBOLO CORRETO 5        
+0024   34E7           00181         RETLW   B'11100111'     ; 06 - RETORNA SÍMBOLO CORRETO 6        
+0025   342C           00182         RETLW   B'00101100'     ; 07 - RETORNA SÍMBOLO CORRETO 7        
+0026   34EF           00183         RETLW   B'11101111'     ; 08 - RETORNA SÍMBOLO CORRETO 8        
+0027   346F           00184         RETLW   B'01101111'     ; 09 - RETORNA SÍMBOLO CORRETO 9        
+0028   34AF           00185         RETLW   B'10101111'     ; 10 - RETORNA SÍMBOLO CORRETO A        
+0029   34E3           00186         RETLW   B'11100011'     ; 11 - RETORNA SÍMBOLO CORRETO b        
+002A   34C6           00187         RETLW   B'11000110'     ; 12 - RETORNA SÍMBOLO CORRETO C        
+002B   34E9           00188         RETLW   B'11101001'     ; 13 - RETORNA SÍMBOLO CORRETO d        
+002C   34C7           00189         RETLW   B'11000111'     ; 14 - RETORNA SÍMBOLO CORRETO E        
+002D   3487           00190         RETLW   B'10000111'     ; 15 - RETORNA SÍMBOLO CORRETO F        
+                      00191 
+                      00192 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00193 ;*                 ROTINA DE ATUALIZAÇÃO DO DISPLAY                *
+                      00194 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00195 ; ESTA ROTINA CONVERTE O VALOR DE TEMPO ATRAVÉS DA ROTINA CONVERTE
+                      00196 ; E ATUALIZA O PORTB PARA ACENDER O DISPLAY CORRETAMENTE
+                      00197 
+002E                  00198 ATUALIZA
+002E   2???           00199         CALL    CONVERTE        ;CONVERTE CONTADOR NO NÚMERO DO
+                      00200                                 ;DISPLAY
+002F   0086           00201         MOVWF   PORTB           ;ATUALIZA O PORTB PARA
+                      00202                                 ;VISUALIZARMOS O VALOR DE CONTADOR
+MPASM 5.77                           EX5.ASM   8-13-2019  21:43:17         PAGE  5
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00203                                 ;NO DISPLAY
+0030   0008           00204         RETURN                  ;NÃO, RETORNA
+                      00205 
+                      00206 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00207 ;*                 ROTINA DE DESLIGAR O TIMER                      *
+                      00208 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00209 ; ESTA ROTINA EXECUTA AS AÇÕES NECESSÁRIAS PARA DESLIGAR O TIMER
+                      00210 
+0031                  00211 DESL_TIMER
+0031   138B           00212         BCF     INTCON,GIE      ;DESLIGA CHAVE GERAL DE INT.
+0032   1185           00213         BCF     LED             ;APAGA O LED
+0033   0008           00214         RETURN                  ;RETORNA
+                      00215 
+                      00216 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00217 ;*                 ROTINA DE LIGAR O TIMER                         *
+                      00218 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00219 ; ESTA ROTINA EXECUTA AS AÇÕES NECESSÁRIAS PARA LIGAR O TIMER
+                      00220 
+0034                  00221 LIGA_TIMER
+0034   1B8B           00222         BTFSC   INTCON,GIE      ;TIMER JÁ ESTA LIGADO?
+0035   0008           00223         RETURN                  ;SIM, RETORNA DIRETO
+                      00224                                 ;NÃO
+0036   110B           00225         BCF     INTCON,T0IF     ;LIMPA FLAG DE INT. DE TMR0
+0037   3083           00226         MOVLW   .256-.125
+0038   0081           00227         MOVWF   TMR0            ;INICIA TMR0 CORRETAMENTE
+0039   307D           00228         MOVLW   .125
+003A   00A4           00229         MOVWF   TEMP1           ;INICIA TEMP1 CORRETAMENTE
+003B   178B           00230         BSF     INTCON,GIE      ;LIGA CHAVE GERAL DE INTERRUPÇÕES
+003C   1585           00231         BSF     LED             ;ACENDE O LED
+003D   0008           00232         RETURN                  ;RETORNA
+                      00233 
+                      00234 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00235 ;*                     INICIO DO PROGRAMA                          *
+                      00236 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00237         
+003E                  00238 INICIO
+003E   1283           00239         BANK0                   ;ALTERA PARA O BANCO 0
+003F   3007           00240         MOVLW   B'00000111'
+0040   009F           00241         MOVWF   CMCON           ;DEFINE O MODO DE OPERAÇÃO DO COMPARADOR ANALÓGICO
+                      00242 
+0041   1683           00243         BANK1                   ;ALTERA PARA O BANCO 1
+0042   3006           00244         MOVLW   B'00000110'
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0043   0085           00245         MOVWF   TRISA           ;DEFINE RA1 E 2 COMO ENTRADA E DEMAIS
+                      00246                                 ;COMO SAÍDAS
+0044   3000           00247         MOVLW   B'00000000'
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0045   0086           00248         MOVWF   TRISB           ;DEFINE TODO O PORTB COMO SAÍDA
+0046   3085           00249         MOVLW   B'10000101'
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0047   0081           00250         MOVWF   OPTION_REG      ;PRESCALER 1:64 NO TMR0
+                      00251                                 ;PULL-UPS DESABILITADOS
+                      00252                                 ;AS DEMAIS CONFG. SÃO IRRELEVANTES
+MPASM 5.77                           EX5.ASM   8-13-2019  21:43:17         PAGE  6
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0048   3020           00253         MOVLW   B'00100000'
+0049   008B           00254         MOVWF   INTCON          ;HABILITADA SOMENTE A INTERRUPÇÃO TMR0
+                      00255                                 ;CHAVE GERAL DAS INTERRUÇÕES DESLIGADAS
+004A   1283           00256         BANK0                   ;RETORNA PARA O BANCO 0
+                      00257 
+                      00258 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00259 ;*                     INICIALIZAÇÃO DAS VARIÁVEIS                 *
+                      00260 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00261 
+                      00262 
+004B   0185           00263         CLRF    PORTA           ;LIMPA O PORTA
+004C   0186           00264         CLRF    PORTB           ;LIMPA O PORTB
+004D   01A3           00265         CLRF    FLAGS           ;LIMPA TODOS OS FLAGS
+004E   300F           00266         MOVLW   V_INICIO
+004F   00A2           00267         MOVWF   TEMPO           ;INICIA TEMPO = V_INICIO
+0050   2???           00268         CALL    ATUALIZA        ;ATUALIZA O DISPLAY INICIALMENTE
+                      00269 
+                      00270 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00271 ;*                     ROTINA PRINCIPAL                            *
+                      00272 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+0051                  00273 MAIN
+0051   1823           00274         BTFSC   F_FIM           ;CHEGOU AO FIM?
+0052   2???           00275         CALL    DESL_TIMER      ;SIM, ENTÃO DESLIGA O TIMER
+                      00276                                 ;NÃO
+0053   2???           00277         CALL    ATUALIZA        ;ATUALIZA O DISPLAY
+0054   30FF           00278         MOVLW   T_FILTRO
+0055   00A6           00279         MOVWF   FILTRO1         ;INICIALIZA FILTRO1 = T_FILTRO
+0056   00A7           00280         MOVWF   FILTRO2         ;INICIALIZA FILTRO2 = T_FILTRO
+                      00281 
+0057                  00282 CHECA_BT1
+0057   1885           00283         BTFSC   BOTAO1          ;O BOTÃO 1 ESTÁ PRESSIONADO?
+0058   2???           00284         GOTO    BT1_LIB         ;NÃO, ENTÃO TRATA COMO LIBERADO
+                      00285                                 ;SIM
+0059   0BA6           00286         DECFSZ  FILTRO1,F       ;DECREMENTA O FILTRO DO BOTÃO
+                      00287                                 ;TERMINOU?
+005A   2???           00288         GOTO    CHECA_BT1       ;NÃO, CONTINUA ESPERANDO
+                      00289                                 ;SIM
+005B   1CA3           00290         BTFSS   ST_BT1          ;BOTÃO JÁ ESTAVA PRESSIONADO?
+005C   2???           00291         GOTO    ACAO_BT1        ;NÃO, EXECUTA AÇÃO DO BOTÃO
+005D   2???           00292         GOTO    CHECA_BT2       ;SIM, CHECA BOTÃO 2
+                      00293 
+005E                  00294 BT1_LIB
+005E   10A3           00295         BCF     ST_BT1          ;MARCA BOTÃO 1 COMO LIBERADO
+                      00296 
+005F                  00297 CHECA_BT2
+005F   1905           00298         BTFSC   BOTAO2          ;O BOTÃO 2 ESTÁ PRESSIONADO?
+0060   2???           00299         GOTO    BT2_LIB         ;NÃO, ENTÃO TRATA COMO LIBERADO
+                      00300                                 ;SIM
+0061   0BA7           00301         DECFSZ  FILTRO2,F       ;DECREMENTA O FILTRO DO BOTÃO
+                      00302                                 ;TERMINOU?
+0062   2???           00303         GOTO    CHECA_BT2       ;NÃO, CONTINUA ESPERANDO
+                      00304                                 ;SIM
+0063   1D23           00305         BTFSS   ST_BT2          ;BOTÃO JÁ ESTAVA PRESSIONADO?
+MPASM 5.77                           EX5.ASM   8-13-2019  21:43:17         PAGE  7
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0064   2???           00306         GOTO    ACAO_BT2        ;NÃO, EXECUTA AÇÃO DO BOTÃO
+0065   2???           00307         GOTO    MAIN            ;SIM, VOLTA AO LOOPING
+                      00308 
+0066                  00309 BT2_LIB
+0066   1123           00310         BCF     ST_BT2          ;MARCA BOTÃO 2 COMO LIBERADO
+0067   2???           00311         GOTO    MAIN            ;RETORNA AO LOOPING
+                      00312 
+0068                  00313 ACAO_BT1                        ;AÇÃO PARA O BOTÃO 1
+0068   14A3           00314         BSF     ST_BT1          ;MARCA BOTÃO 1 COMO JÁ PRESSIONADO
+0069   2???           00315         CALL    LIGA_TIMER      ;LIGA O TIMER
+006A   2???           00316         GOTO    MAIN
+                      00317 
+006B                  00318 ACAO_BT2                        ;AÇÃO PARA O BOTÃO 2
+006B   1523           00319         BSF     ST_BT2          ;MARCA BOTÃO 2 COMO JÁ PRESSIONADO
+006C   2???           00320         CALL    DESL_TIMER      ;DESLIGA O TIMER
+006D   2???           00321         GOTO    MAIN            ;NÃO, VOLTA AO LOOP PRINCIPAL
+                      00322 
+                      00323 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00324 ;*                       FIM DO PROGRAMA                           *
+                      00325 ;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+                      00326 
+3F61                  00327         END                     ;OBRIGATÓRIO
+MPASM 5.77                           EX5.ASM   8-13-2019  21:43:17         PAGE  8
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+ACAO_BT1                          00000068
+ACAO_BT2                          0000006B
+ADDEN                             00000003
+ADEN                              00000003
+ATUALIZA                          0000002E
+BANK0                             BCF STATUS,RP0
+BANK1                             BSF STATUS,RP0
+BOTAO1                            PORTA,1
+BOTAO2                            PORTA,2
+BRGH                              00000002
+BT1_LIB                           0000005E
+BT2_LIB                           00000066
+C                                 00000000
+C1INV                             00000004
+C1OUT                             00000006
+C2INV                             00000005
+C2OUT                             00000007
+CCP1CON                           00000017
+CCP1IE                            00000002
+CCP1IF                            00000002
+CCP1M0                            00000000
+CCP1M1                            00000001
+CCP1M2                            00000002
+CCP1M3                            00000003
+CCP1X                             00000005
+CCP1Y                             00000004
+CCPR1                             00000015
+CCPR1H                            00000016
+CCPR1L                            00000015
+CHECA_BT1                         00000057
+CHECA_BT2                         0000005F
+CIS                               00000003
+CM0                               00000000
+CM1                               00000001
+CM2                               00000002
+CMCON                             0000001F
+CMIE                              00000006
+CMIF                              00000006
+CONVERTE                          0000001B
+CREN                              00000004
+CSRC                              00000007
+DATA_CP_OFF                       00003FFF
+DATA_CP_ON                        00003EFF
+DC                                00000001
+DESL_TIMER                        00000031
+EEADR                             0000009B
+EECON1                            0000009C
+EECON2                            0000009D
+EEDATA                            0000009A
+EEIE                              00000007
+EEIF                              00000007
+F                                 00000001
+FERR                              00000002
+MPASM 5.77                           EX5.ASM   8-13-2019  21:43:17         PAGE  9
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+FILTRO1                           00000026
+FILTRO2                           00000027
+FLAGS                             00000023
+FSR                               00000004
+F_FIM                             FLAGS,0
+GIE                               00000007
+INDF                              00000000
+INICIO                            0000003E
+INTCON                            0000000B
+INTE                              00000004
+INTEDG                            00000006
+INTF                              00000001
+IRP                               00000007
+LED                               PORTA,3
+LIGA_TIMER                        00000034
+MAIN                              00000051
+NOT_BO                            00000000
+NOT_BOD                           00000000
+NOT_BOR                           00000000
+NOT_PD                            00000003
+NOT_POR                           00000001
+NOT_RBPU                          00000007
+NOT_T1SYNC                        00000002
+NOT_TO                            00000004
+OERR                              00000001
+OPTION_REG                        00000081
+OSCF                              00000003
+PCL                               00000002
+PCLATH                            0000000A
+PCON                              0000008E
+PEIE                              00000006
+PIE1                              0000008C
+PIR1                              0000000C
+PORTA                             00000005
+PORTB                             00000006
+PR2                               00000092
+PS0                               00000000
+PS1                               00000001
+PS2                               00000002
+PSA                               00000003
+RA0                               00000000
+RA1                               00000001
+RA2                               00000002
+RA3                               00000003
+RA4                               00000004
+RA5                               00000005
+RA6                               00000006
+RA7                               00000007
+RB0                               00000000
+RB1                               00000001
+RB2                               00000002
+RB3                               00000003
+RB4                               00000004
+MPASM 5.77                           EX5.ASM   8-13-2019  21:43:17         PAGE 10
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+RB5                               00000005
+RB6                               00000006
+RB7                               00000007
+RBIE                              00000003
+RBIF                              00000000
+RCIE                              00000005
+RCIF                              00000005
+RCREG                             0000001A
+RCSTA                             00000018
+RD                                00000000
+RP0                               00000005
+RP1                               00000006
+RX9                               00000006
+RX9D                              00000000
+SAI_INT                           00000016
+SPBRG                             00000099
+SPEN                              00000007
+SREN                              00000005
+STATUS                            00000003
+STATUS_TEMP                       00000021
+ST_BT1                            FLAGS,1
+ST_BT2                            FLAGS,2
+SYNC                              00000004
+T0CS                              00000005
+T0IE                              00000005
+T0IF                              00000002
+T0SE                              00000004
+T1CKPS0                           00000004
+T1CKPS1                           00000005
+T1CON                             00000010
+T1OSCEN                           00000003
+T2CKPS0                           00000000
+T2CKPS1                           00000001
+T2CON                             00000012
+TEMP1                             00000024
+TEMP2                             00000025
+TEMPO                             00000022
+TMR0                              00000001
+TMR0IE                            00000005
+TMR0IF                            00000002
+TMR1                              0000000E
+TMR1CS                            00000001
+TMR1H                             0000000F
+TMR1IE                            00000000
+TMR1IF                            00000000
+TMR1L                             0000000E
+TMR1ON                            00000000
+TMR2                              00000011
+TMR2IE                            00000001
+TMR2IF                            00000001
+TMR2ON                            00000002
+TOUTPS0                           00000003
+TOUTPS1                           00000004
+MPASM 5.77                           EX5.ASM   8-13-2019  21:43:17         PAGE 11
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+TOUTPS2                           00000005
+TOUTPS3                           00000006
+TRISA                             00000085
+TRISA0                            00000000
+TRISA1                            00000001
+TRISA2                            00000002
+TRISA3                            00000003
+TRISA4                            00000004
+TRISA5                            00000005
+TRISA6                            00000006
+TRISA7                            00000007
+TRISB                             00000086
+TRISB0                            00000000
+TRISB1                            00000001
+TRISB2                            00000002
+TRISB3                            00000003
+TRISB4                            00000004
+TRISB5                            00000005
+TRISB6                            00000006
+TRISB7                            00000007
+TRMT                              00000001
+TX9                               00000006
+TX9D                              00000000
+TXEN                              00000005
+TXIE                              00000004
+TXIF                              00000004
+TXREG                             00000019
+TXSTA                             00000098
+T_FILTRO                          000000FF
+VR0                               00000000
+VR1                               00000001
+VR2                               00000002
+VR3                               00000003
+VRCON                             0000009F
+VREN                              00000007
+VROE                              00000006
+VRR                               00000005
+V_INICIO                          0000000F
+W                                 00000000
+WR                                00000001
+WREN                              00000002
+WRERR                             00000003
+W_TEMP                            00000020
+Z                                 00000002
+_BODEN_OFF                        00003FBF
+_BODEN_ON                         00003FFF
+_BOREN_OFF                        00003FBF
+_BOREN_ON                         00003FFF
+_CONFIG                           00002007
+_CPD_OFF                          00003FFF
+_CPD_ON                           00003EFF
+_CP_OFF                           00003FFF
+_CP_ON                            00001FFF
+MPASM 5.77                           EX5.ASM   8-13-2019  21:43:17         PAGE 12
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+_DEVID1                           00002006
+_ER_OSC_CLKOUT                    00003FFF
+_ER_OSC_NOCLKOUT                  00003FFE
+_EXTCLK_OSC                       00003FEF
+_FOSC_ECIO                        00003FEF
+_FOSC_EXTRCCLK                    00003FFF
+_FOSC_EXTRCIO                     00003FFE
+_FOSC_HS                          00003FEE
+_FOSC_INTOSCCLK                   00003FFD
+_FOSC_INTOSCIO                    00003FFC
+_FOSC_LP                          00003FEC
+_FOSC_XT                          00003FED
+_HS_OSC                           00003FEE
+_IDLOC0                           00002000
+_IDLOC1                           00002001
+_IDLOC2                           00002002
+_IDLOC3                           00002003
+_INTOSC_OSC_CLKOUT                00003FFD
+_INTOSC_OSC_NOCLKOUT              00003FFC
+_INTRC_OSC_CLKOUT                 00003FFD
+_INTRC_OSC_NOCLKOUT               00003FFC
+_LP_OSC                           00003FEC
+_LVP_OFF                          00003F7F
+_LVP_ON                           00003FFF
+_MCLRE_OFF                        00003FDF
+_MCLRE_ON                         00003FFF
+_PWRTE_OFF                        00003FFF
+_PWRTE_ON                         00003FF7
+_RC_OSC_CLKOUT                    00003FFF
+_RC_OSC_NOCLKOUT                  00003FFE
+_WDTE_OFF                         00003FFB
+_WDTE_ON                          00003FFF
+_WDT_OFF                          00003FFB
+_WDT_ON                           00003FFF
+_XT_OSC                           00003FED
+__16F628A                         00000001
+__DEBUG                           
+
+Errors   :     0
+Warnings :     0 reported,     0 suppressed
+Messages :     3 reported,     0 suppressed
+
+

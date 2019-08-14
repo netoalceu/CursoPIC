@@ -1,0 +1,371 @@
+[p LITE_MODE AUTOSTATIC PIC14 PICREGULAR PICMID ]
+[d version 1.1 ]
+[d edition pro ]
+[d chip 16F628A ]
+[d frameptr 6 ]
+"26 C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_2\test_Board_2_XC8_16F648A.X\atraso.c
+[v _atraso_ms atraso_ms `(v  1 e 1 0 ]
+"62 C:\Program Files (x86)\Microchip\xc8\v1.45\sources\common\float.c
+[v ___ftpack __ftpack `(f  1 e 3 0 ]
+"86 C:\Program Files (x86)\Microchip\xc8\v1.45\sources\common\ftadd.c
+[v ___ftadd __ftadd `(f  1 e 3 0 ]
+"4 C:\Program Files (x86)\Microchip\xc8\v1.45\sources\common\Umul8.c
+[v ___bmul __bmul `(uc  1 e 1 0 ]
+"6 C:\Program Files (x86)\Microchip\xc8\v1.45\sources\pic\eeprom.c
+[v _eecpymem eecpymem `(v  1 e 1 0 ]
+"39
+[v _memcpyee memcpyee `(v  1 e 1 0 ]
+"29 C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_2\test_Board_2_XC8_16F648A.X\eeprom_ext.c
+[v _e2pext_r e2pext_r `(uc  1 e 1 0 ]
+"49
+[v _e2pext_w e2pext_w `(v  1 e 1 0 ]
+"29 C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_2\test_Board_2_XC8_16F648A.X\i2c.c
+[v _delay delay `(v  1 e 1 0 ]
+"39
+[v _i2c_init i2c_init `(v  1 e 1 0 ]
+"46
+[v _i2c_start i2c_start `(v  1 e 1 0 ]
+"55
+[v _i2c_stop i2c_stop `(v  1 e 1 0 ]
+"64
+[v _i2c_wb i2c_wb `(v  1 e 1 0 ]
+"84
+[v _i2c_rb i2c_rb `(uc  1 e 1 0 ]
+"30 C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_2\test_Board_2_XC8_16F648A.X\lcd.c
+[v _lcd_wr lcd_wr `(v  1 e 1 0 ]
+"44
+[v _lcd_cmd lcd_cmd `(v  1 e 1 0 ]
+"55
+[v _lcd_dat lcd_dat `(v  1 e 1 0 ]
+"66
+[v _lcd_init lcd_init `(v  1 e 1 0 ]
+"85
+[v _lcd_str lcd_str `(v  1 e 1 0 ]
+"33 C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_2\test_Board_2_XC8_16F648A.X\rtc_r.c
+[v _getd getd `(uc  1 e 1 0 ]
+"38
+[v _getu getu `(uc  1 e 1 0 ]
+"44
+[v _rtc_r rtc_r `(v  1 e 1 0 ]
+"30 C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_2\test_Board_2_XC8_16F648A.X\serial.c
+[v _serial_init serial_init `(v  1 e 1 0 ]
+"48
+[v _serial_tx serial_tx `(v  1 e 1 0 ]
+"54
+[v _serial_tx_str serial_tx_str `(v  1 e 1 0 ]
+"66
+[v _serial_rx serial_rx `(uc  1 e 1 0 ]
+"32 C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_2\test_Board_2_XC8_16F648A.X\teclado.c
+[v _tc_tecla tc_tecla `(uc  1 e 1 0 ]
+"39 C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_2\test_Board_2_XC8_16F648A.X\teste_b2.c
+[v _main main `(v  1 e 1 0 ]
+"164 C:\Program Files (x86)\Microchip\xc8\v1.45\include\pic16f628a.h
+[v _PORTA PORTA `VEuc  1 e 1 @5 ]
+"226
+[v _PORTB PORTB `VEuc  1 e 1 @6 ]
+[s S145 . 1 `uc 1 TMR1IF 1 0 :1:0 
+`uc 1 TMR2IF 1 0 :1:1 
+`uc 1 CCP1IF 1 0 :1:2 
+`uc 1 . 1 0 :1:3 
+`uc 1 TXIF 1 0 :1:4 
+`uc 1 RCIF 1 0 :1:5 
+`uc 1 CMIF 1 0 :1:6 
+`uc 1 EEIF 1 0 :1:7 
+]
+"403
+[u S154 . 1 `S145 1 . 1 0 ]
+[v _PIR1bits PIR1bits `VES154  1 e 1 @12 ]
+[s S116 . 1 `uc 1 RX9D 1 0 :1:0 
+`uc 1 OERR 1 0 :1:1 
+`uc 1 FERR 1 0 :1:2 
+`uc 1 ADEN 1 0 :1:3 
+`uc 1 CREN 1 0 :1:4 
+`uc 1 SREN 1 0 :1:5 
+`uc 1 RX9 1 0 :1:6 
+`uc 1 SPEN 1 0 :1:7 
+]
+"701
+[s S125 . 1 `uc 1 . 1 0 :3:0 
+`uc 1 ADDEN 1 0 :1:3 
+]
+[u S128 . 1 `S116 1 . 1 0 `S125 1 . 1 0 ]
+[v _RCSTAbits RCSTAbits `VES128  1 e 1 @24 ]
+"751
+[v _TXREG TXREG `VEuc  1 e 1 @25 ]
+"758
+[v _RCREG RCREG `VEuc  1 e 1 @26 ]
+"765
+[v _CMCON CMCON `VEuc  1 e 1 @31 ]
+"905
+[v _TRISA TRISA `VEuc  1 e 1 @133 ]
+"967
+[v _TRISB TRISB `VEuc  1 e 1 @134 ]
+"1199
+[v _SPBRG SPBRG `VEuc  1 e 1 @153 ]
+"1339
+[v _BRGH BRGH `VEb  1 e 0 @1218 ]
+"1379
+[v _CREN CREN `VEb  1 e 0 @196 ]
+"1415
+[v _RA0 RA0 `VEb  1 e 0 @40 ]
+"1417
+[v _RA1 RA1 `VEb  1 e 0 @41 ]
+"1419
+[v _RA2 RA2 `VEb  1 e 0 @42 ]
+"1421
+[v _RA3 RA3 `VEb  1 e 0 @43 ]
+"1423
+[v _RA4 RA4 `VEb  1 e 0 @44 ]
+"1437
+[v _RB3 RB3 `VEb  1 e 0 @51 ]
+"1439
+[v _RB4 RB4 `VEb  1 e 0 @52 ]
+"1441
+[v _RB5 RB5 `VEb  1 e 0 @53 ]
+"1443
+[v _RB6 RB6 `VEb  1 e 0 @54 ]
+"1445
+[v _RB7 RB7 `VEb  1 e 0 @55 ]
+"1461
+[v _RX9 RX9 `VEb  1 e 0 @198 ]
+"1465
+[v _SPEN SPEN `VEb  1 e 0 @199 ]
+"1469
+[v _SYNC SYNC `VEb  1 e 0 @1220 ]
+"1523
+[v _TRISA4 TRISA4 `VEb  1 e 0 @1068 ]
+"1547
+[v _TRMT TRMT `VEb  1 e 0 @1217 ]
+"1549
+[v _TX9 TX9 `VEb  1 e 0 @1222 ]
+"1553
+[v _TXEN TXEN `VEb  1 e 0 @1221 ]
+"29 C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_2\test_Board_2_XC8_16F648A.X\rtc_r.c
+[v _date date `VE[10]uc  1 e 10 0 ]
+"30
+[v _time time `VE[10]uc  1 e 10 0 ]
+"30 C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_2\test_Board_2_XC8_16F648A.X\teclado.c
+[v _linha linha `DC[4]uc  1 e 4 0 ]
+"39 C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_2\test_Board_2_XC8_16F648A.X\teste_b2.c
+[v _main main `(v  1 e 1 0 ]
+{
+"40
+[v main@i i `uc  1 a 1 9 ]
+[v main@tmp tmp `uc  1 a 1 8 ]
+"249
+} 0
+"32 C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_2\test_Board_2_XC8_16F648A.X\teclado.c
+[v _tc_tecla tc_tecla `(uc  1 e 1 0 ]
+{
+"34
+[v tc_tecla@to to `ui  1 a 2 0 ]
+"35
+[v tc_tecla@i i `uc  1 a 1 4 ]
+"36
+[v tc_tecla@ret ret `uc  1 a 1 3 ]
+"37
+[v tc_tecla@tmp tmp `uc  1 a 1 2 ]
+"32
+[v tc_tecla@timeout timeout `ui  1 p 2 6 ]
+"57
+} 0
+"4 C:\Program Files (x86)\Microchip\xc8\v1.45\sources\common\Umul8.c
+[v ___bmul __bmul `(uc  1 e 1 0 ]
+{
+[v ___bmul@multiplier multiplier `uc  1 a 1 wreg ]
+"6
+[v ___bmul@product product `uc  1 a 1 2 ]
+"4
+[v ___bmul@multiplier multiplier `uc  1 a 1 wreg ]
+[v ___bmul@multiplicand multiplicand `uc  1 p 1 0 ]
+"6
+[v ___bmul@multiplier multiplier `uc  1 a 1 3 ]
+"51
+} 0
+"54 C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_2\test_Board_2_XC8_16F648A.X\serial.c
+[v _serial_tx_str serial_tx_str `(v  1 e 1 0 ]
+{
+"56
+[v serial_tx_str@i i `uc  1 a 1 4 ]
+"54
+[v serial_tx_str@val val `*.25DCuc  1 p 2 1 ]
+"63
+} 0
+"48
+[v _serial_tx serial_tx `(v  1 e 1 0 ]
+{
+[v serial_tx@val val `uc  1 a 1 wreg ]
+[v serial_tx@val val `uc  1 a 1 wreg ]
+"50
+[v serial_tx@val val `uc  1 a 1 0 ]
+"52
+} 0
+"66
+[v _serial_rx serial_rx `(uc  1 e 1 0 ]
+{
+"68
+[v serial_rx@to to `ui  1 a 2 8 ]
+"66
+[v serial_rx@timeout timeout `ui  1 p 2 6 ]
+"85
+} 0
+"30
+[v _serial_init serial_init `(v  1 e 1 0 ]
+{
+"44
+} 0
+"44 C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_2\test_Board_2_XC8_16F648A.X\rtc_r.c
+[v _rtc_r rtc_r `(v  1 e 1 0 ]
+{
+"46
+[v rtc_r@tmp tmp `uc  1 a 1 6 ]
+"88
+} 0
+"38
+[v _getu getu `(uc  1 e 1 0 ]
+{
+[v getu@nn nn `uc  1 a 1 wreg ]
+[v getu@nn nn `uc  1 a 1 wreg ]
+"40
+[v getu@nn nn `uc  1 a 1 0 ]
+"41
+} 0
+"33
+[v _getd getd `(uc  1 e 1 0 ]
+{
+[v getd@nn nn `uc  1 a 1 wreg ]
+[v getd@nn nn `uc  1 a 1 wreg ]
+"35
+[v getd@nn nn `uc  1 a 1 1 ]
+"36
+} 0
+"85 C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_2\test_Board_2_XC8_16F648A.X\lcd.c
+[v _lcd_str lcd_str `(v  1 e 1 0 ]
+{
+"87
+[v lcd_str@i i `uc  1 a 1 10 ]
+"85
+[v lcd_str@str str `*.26DCuc  1 p 2 7 ]
+"94
+} 0
+"55
+[v _lcd_dat lcd_dat `(v  1 e 1 0 ]
+{
+[v lcd_dat@val val `uc  1 a 1 wreg ]
+[v lcd_dat@val val `uc  1 a 1 wreg ]
+"57
+[v lcd_dat@val val `uc  1 a 1 6 ]
+"64
+} 0
+"66
+[v _lcd_init lcd_init `(v  1 e 1 0 ]
+{
+"83
+} 0
+"44
+[v _lcd_cmd lcd_cmd `(v  1 e 1 0 ]
+{
+[v lcd_cmd@val val `uc  1 a 1 wreg ]
+[v lcd_cmd@val val `uc  1 a 1 wreg ]
+"46
+[v lcd_cmd@val val `uc  1 a 1 6 ]
+"53
+} 0
+"30
+[v _lcd_wr lcd_wr `(v  1 e 1 0 ]
+{
+[v lcd_wr@val val `uc  1 a 1 wreg ]
+"32
+[v lcd_wr@i i `uc  1 a 1 2 ]
+"30
+[v lcd_wr@val val `uc  1 a 1 wreg ]
+"34
+[v lcd_wr@val val `uc  1 a 1 1 ]
+"42
+} 0
+"26 C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_2\test_Board_2_XC8_16F648A.X\atraso.c
+[v _atraso_ms atraso_ms `(v  1 e 1 0 ]
+{
+"28
+[v atraso_ms@i i `ui  1 a 2 3 ]
+"29
+[v atraso_ms@j j `uc  1 a 1 5 ]
+"26
+[v atraso_ms@valor valor `ui  1 p 2 0 ]
+"44
+} 0
+"39 C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_2\test_Board_2_XC8_16F648A.X\i2c.c
+[v _i2c_init i2c_init `(v  1 e 1 0 ]
+{
+"44
+} 0
+"49 C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_2\test_Board_2_XC8_16F648A.X\eeprom_ext.c
+[v _e2pext_w e2pext_w `(v  1 e 1 0 ]
+{
+"51
+[v e2pext_w@tmp tmp `ui  1 a 2 5 ]
+"54
+[v e2pext_w@nt nt `uc  1 a 1 4 ]
+"53
+[v e2pext_w@al al `uc  1 a 1 3 ]
+"52
+[v e2pext_w@ah ah `uc  1 a 1 2 ]
+"49
+[v e2pext_w@addr addr `ui  1 p 2 11 ]
+[v e2pext_w@val val `uc  1 p 1 13 ]
+"68
+} 0
+"29
+[v _e2pext_r e2pext_r `(uc  1 e 1 0 ]
+{
+"33
+[v e2pext_r@al al `uc  1 a 1 10 ]
+"32
+[v e2pext_r@ah ah `uc  1 a 1 9 ]
+"31
+[v e2pext_r@ret ret `uc  1 a 1 8 ]
+"29
+[v e2pext_r@addr addr `ui  1 p 2 5 ]
+"46
+} 0
+"64 C:\Users\netoa\MPLABXProjects\CursoPIC\examples\board_2\test_Board_2_XC8_16F648A.X\i2c.c
+[v _i2c_wb i2c_wb `(v  1 e 1 0 ]
+{
+[v i2c_wb@val val `uc  1 a 1 wreg ]
+"66
+[v i2c_wb@i i `uc  1 a 1 2 ]
+"64
+[v i2c_wb@val val `uc  1 a 1 wreg ]
+"67
+[v i2c_wb@val val `uc  1 a 1 1 ]
+"80
+} 0
+"55
+[v _i2c_stop i2c_stop `(v  1 e 1 0 ]
+{
+"62
+} 0
+"46
+[v _i2c_start i2c_start `(v  1 e 1 0 ]
+{
+"53
+} 0
+"84
+[v _i2c_rb i2c_rb `(uc  1 e 1 0 ]
+{
+[v i2c_rb@ack ack `uc  1 a 1 wreg ]
+"86
+[v i2c_rb@i i `uc  1 a 1 4 ]
+"87
+[v i2c_rb@ret ret `uc  1 a 1 3 ]
+"84
+[v i2c_rb@ack ack `uc  1 a 1 wreg ]
+"87
+[v i2c_rb@ack ack `uc  1 a 1 2 ]
+"110
+} 0
+"29
+[v _delay delay `(v  1 e 1 0 ]
+{
+"37
+} 0
